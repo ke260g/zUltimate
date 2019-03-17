@@ -1,0 +1,221 @@
+- Design Patterns:
+  - Architectural Pattern:
+    - example:
+  - Software Design Pattern:
+    - example:
+      - creational patterns:
+        - abstract factory
+        - builder
+        - dependency injection
+        - factory method
+        - lazy initialzation
+        - multiton
+        - Object Pool
+        - Prototype
+        - Resource acquisition initialzation 
+        - Singleton
+      - structural patterns:
+        - adapter, wrappter, translator
+        - bridge
+        - composite
+        - proxy
+        - decorator
+      - behavioral patterns:
+        - iterator
+        - interpreter
+        - defualt-null-object
+        - template method
+        - observer
+      - concurrency patterns:
+        - compute kernel: like GPU-Matrix-Multiplicaton
+        - event-based-asynchronous:
+        - Thread Pool: task-queue in python?
+        - mutex, rw-lock:
+
+- POSA: Pattern-Oriented Software Architecture
+- a "callback-based" style of asynchronous programming
+
+JavaScript 模式:
+  + lodash: 几乎所有方法都是 immutable的
+      + 原生的方法 mutable/immutable各种混淆
+  + 函数式编程: ramda, eweda
+  + parasitic 寄生构造函数模式
+      + 极大的弊端就是 对象方法 被重复实例化!!!
+  + durable objects 稳妥对象
+
+### 闭包: 一个函数 有权访问另一个函数作用域中的变量
+  + 一般地, *闭包函数* 需要更多内存 包含 其*创建函数*作用域中的变量
+      + 而且, 每调用一次*闭包函数*就要 多一份这些变量的副本
+
+# A Quick Note From GoF's Book <Design Parttern)
+目标(四个目标的是 层层递进的):
+  1: 在复杂的变化(技术/需求/队伍/市场) 中 抽离相对稳定的部分
+  2: 减少 版本更迭带来的 代码重写
+  3: 提高复用性
+  4: 更适当的耦合度
+禁忌:
+  双向耦合
+  较为复杂 难以理解的模式 不要为了用而用
+  不要认为 面向过程的C语言 就不适用
+  模式跟语言无关
+Principle:
+  单一职责原则 SRP:
+  开放-封闭原则 OCP:
+    对内封闭(封装)
+    对外开放(拓展)
+  依赖颠倒原则:
+    抽象不依赖实现
+    实现针对抽象
+    针对接口编程 而非针对实现编程
+  里氏交换原则 LSP:
+    把父类替换成子类且不影响行为
+  迪米特法则 LoD:
+    最小知识原则
+    类之间松耦合
+  敏捷开发原则:
+    不要为代码 添加基于猜测的 但实际用不上的功能
+
+软件三层结构:
+  数据访问层 > 业务逻辑层 > 表示层
+
+UML 简介:
+  继承父类
+  实现接口
+  依赖 关联 组合 聚合 (拥有程度)
+  Aggregation 聚合(弱拥有)
+  Composition 合成(同一生命周期)
+  Dependency  依赖
+  Association 关联
+
+模式的分类:
+  创建模式  结构模式  行为模式
+  更多: 并发模式 IO服用模式
+# 创建模式
+简单工厂模式:
+  父类  n子类
+  工厂方法 根据参数 生成不同子类
+策略模式:
+  big-switch 根据参数调用 工厂方法
+策略模式 + 简单工程模式:
+  工厂方法 返回父类 (实际上实体是子类)
+  屏蔽上层对子类的认知
+  上层统一地调用 父类方法
+抽象工厂模式 Abstract Factory:
+  父类 n子类 子类工厂接口 n子类工厂方法
+  创建  一系列相关对象  的方法
+  无需指定具体类
+  本质: 工厂方法集  简化{子类集}之间的切换
+  如: ORM  项目切换数据库
+  实现:  类放射
+建造者模式 Builder:
+  指挥者 + 构造者 + n个构造实体
+  构造者   一堆虚方法 + 状态变量
+  构造实体  实现 虚方法集
+  指挥者   调用 构造者的方法集 且 结果作为状态set到 构造者变量中
+  上层 把构造实体传给指挥者
+  本质: 把模板方法模式 的算法框架抽离
+        不让构造实体  get/set 算法框架
+原型模式 Prototype:
+  用原型实例指定创建对象的种类
+  创建后 深复制/浅复制
+  本质: 带参数的 clone()/copy()
+对象池模式 ObjectPool:
+单实例模式 Singleton:
+  保证全局访问对象的唯一性
+  static getInstance() 方法
+  多线程注意加锁  mutex/rwlock
+  双重锁定 (double-check locking)
+    实例化前锁定
+    访问前锁定
+  静态初始化 > 懒汉式单例
+# 结构模式
+组合模式 Compositie ???:
+装饰模式 Decoration:
+  为已有功能 动态添加更多功能
+  减少原有类的复杂度
+  简化装饰扩展流程
+代理模式 Proxy:
+  接口 实体 代理
+  代理 和 实体 都实现接口
+  代理持有实体
+  代理方法 return 同名实体方法
+  代理方法 可以作预处理/后处理
+  上层只调用 代理 (上层甚至不知道实体存在)
+  如: 安全代理 虚拟代理 远程代理
+适配器模式 Adapater:
+  类适配 vs 对象适配
+  将 原有类的接口 转换
+  本质: 不修改原有类/接口前提下 保证/简化*上层调用*符合需求
+  实际上: 接近 封装 的本意
+桥接模式 Bridge:
+  深度分离 抽象#实现 (即 持有#被持)
+  持有者-虚类  持有者-实现类n个
+  被持者-虚类  被持者-实现类m个
+  n持有者-实现类:
+    分别有不同方式  控制  被持者-虚类
+    但都不知道  被持者  的具体实现
+# 行为模式
+享元者模式 FlyWeight ???:
+模板方法模式 Template:
+  父类 { 算法框架 + n个步骤为虚方法 }
+  子类 不改变算法框架  实现n个步骤
+  本质: 流程化的抽象 与 多态
+  如: java的okhttp.jar
+观察者模式 Observer: (存在 双向耦合)
+  发布-订阅模式 Publish-Subscribe
+  发布者父类     观察者父类
+  n发布者子类    m观察者子类
+  缺陷: 观察者 依赖 发布者状态
+  双向耦合 是 禁忌
+事件委托实现 Event-Delegate:
+  一个事件 m个委托的实现 (委托链 委托队列 委托hashtable)
+  本质: 方法引用 函数指针 异步回调
+外观模式 Facade:
+  N个类-对象 有共同方法集
+  构造 外观方法集  管理N个类的共同方法集
+  上层 只关注 一个方法集
+  如: ORM
+状态模式 State:
+  改变对象的某个值 后 对象方法的行为会跟着改变
+  本质: 对象同一方法的行为 依赖 其状态
+  实际上: 抽象成*状态机*更靠谱
+备忘录模式 Memento:
+  不破坏封装的同时 捕获对象状态
+  如: 游戏进度保存
+命令模式 Commands:
+  请求者-命令队列管理者-响应者
+  管理者: 判断命令是否可入列
+          控制 响应者并发能力
+  响应者异步回调: 考虑  直接回调到请求者 或者 经过管理者回调
+  命令 可撤销(在队列中) 可重做(备忘录记住了 已完成的命令)
+迭代器模式 Iterator:
+  提供一套方法顺序变量  聚合对象(数组 链表 树 集合 字典)
+  隐藏对象的内部形式
+  如: first() next() isLast() getCurrent()
+解析器模式 Interpreter:
+职责链模式 CoR:
+  使N个处理者 链式/并发处理同一个请求
+  如: es6-Promise reduce()
+中介者模式 Mediator:
+  中介者  封装一系列对象实体(所有待管理的子类)的交互模式
+  中介者虚类  n中介者-实现类
+  对象者虚类  m对象者-实现类
+  中介者-实现类:
+    知道 所有待管理的对象者-实现类
+    且对 其进行管理
+  对象者-实现类:
+    知道   中介抽象类
+    不知道 中介实现类
+    两两互不相知
+访问者模式 Accessor:
+  访问者-虚类 n访问者-实现类
+  被访者-虚类 m被访者-实现类
+  n相对稳定
+  m会不断增长
+  每个被访者:
+    有j种状态 (j通常为1)
+    每种状态有n个表现方法 (共n*j个方法)
+  每个访问者:
+    有j种状态
+    每种状态的访问方法 仅调用 被访者对应的被访方法
+  本质: 避免无限增长的被访者 导致 访问者无限的big-switch
