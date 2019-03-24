@@ -28,3 +28,4 @@ mkdir ~/ycm_build && cd ~/ycm_build
 cmake -G "Unix Makefiles" -DUSE_SYSTEM_LIBCLANG=ON -DEXTERNAL_LIBCLANG_PATH=/usr/lib/llvm-4.0/lib/libclang-4.0.so . ~/.vim/bundle/YouCompleteMe/third_party/ycmd/cppk
 make ycm_core
 ~/.vim/bundle/YouCompleteMe/install.sh --clang-completer
+ls ~/.vim/bundle/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py
