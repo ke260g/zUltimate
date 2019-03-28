@@ -14,12 +14,16 @@ asciio graphviz
 source-highlight highlight
 jq pyflakes
 astyle indent
+cscope ctags
 
 # advanced hacking
 mkdir glibc && cd glibc && apt-src glibc-source
 susv2 susv3 susv4
 gdb-doc
 flex-doc bison-doc
+
+# code statistic
+cloc statsvn gitstats
 
 # gui
 ghex doxygen doxygen-gui cmake-gui

@@ -12,6 +12,11 @@ man 7 udp tcp
       sendmsg recvmsg
 man 3 byteorder bswap endian (字端控制)
 man netdb.h                  (名义上是数据库 实际上可获取服务端信息)
+snmp
+
+网际协议
+apt install quagga
+ripngd(8), bgpd(8), ripd(8), ospfd(8), ospf6d(8), isisd(8), zebra(8), vtysh(1)
 
 应用层 DNS HTTP FTP SSL DHCP
 传输层 TCP UDP ICMP IGMP ICMPv6

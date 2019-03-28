@@ -148,13 +148,6 @@ diff -uarNq dir1 dir2
 
 # for i do  不加in $var, 默认读取的是 $1 $2
 
-# install cygwin
-wget https://raw.githubusercontent.com/transcode-open/apt-cyg/master/apt-cyg
-# make on right-click-menu
-apt-cyg install chere
-chere -i -f -t mintty
-/path/to/cygwin/bin/mintty.exe -i /Cygwin-Terminal.ico -
-
 # ssh without inactive password
 sshpass -v -p "password" ssh -o stricthostkeychecking=no username@hostname "exec cmds"
 sshpass -v -f  passfile  scp -o stricthostkeychecking=no args
