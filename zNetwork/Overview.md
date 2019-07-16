@@ -5,8 +5,7 @@ level 2: 内核 /proc/net
 TCP IP 超简总结 https://www.jianshu.com/p/9f3e879a4c9c
 
 unix编程接口
-man 7 udp tcp
-      raw icmp
+man 7 udp tcp icmp
       socket ip arp
       netlink ipfw
       sendmsg recvmsg
@@ -42,3 +41,28 @@ segment/packet/frame 段/包/帧 传输层/网络层/链路层
 	这个必须有
 	arp流程学习 默认路由器 MAC
 </pre>
+
+### resource
++ 简明的总结 https://www.sans.org/security-resources/tcpip.pdf
+
+
+### Self Conclusion
+一个通讯流程的抽象至少以下部分组成:
+角色描述, 通讯时序, 通讯内容, 数据流向
+#### 角色描述
+至少包括角色集合, 升华版可以是关系描述
+例子:
+TCP(C/S)
+SNMP(MasterAgent, Manager, Agent)
+802.1x(supplicant, Authenticator, Authentication server)
+到了更复杂的场景,  就需要考虑拓扑关系
+#### 通讯时序-状态机
+可以采用至少两种状态机模型
++ 每个角色的状态机, "变换函数"是可以"事件" 或[收/发 通讯内容](#通讯内容)
++ 全局上下文抽象状态机, 每个状态下是 不同角色的状态tuple 
+#### 通讯内容
+协议头描述
+数据内容的组成结构
+TCP/IP 的话要指明端口
+#### 数据流向
+物理流向  抽象流向

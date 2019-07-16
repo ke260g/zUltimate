@@ -1,8 +1,9 @@
 网络负载均衡问题:
-三层 DNS LVS APP
+四层 DNS LVS APP
 DNS 出个 domain对应n个ip
 APP 应用层服务器, 如nginx进行正/反向代理, redis/kafka 服务订阅
 LVS Linux Virtual Server, Layer4 LoadBalancing
+ACL 可编程的交换机芯片 关键部件是ACL, 通过ACL可以实现硬件级转发
 
 ### LVS 有三个实现方式  
 + NAT              性能瓶颈较大, 吞吐量完全依赖虚拟服务器, 且需要在一个子网段
@@ -24,3 +25,16 @@ tcpsp, (tcp splicing)   (layer-7 switching)
 tcpha, (tcp handle of)  (layer-7 switching)
 Keepalived, VRRP协议
 Heartbeat, Corosync
+
+
+### SW上的实现
+本质上基于芯片的ACL功能
+
+### 软件层场景
+#### 周期性请求前 睡眠一小段随机时间 避免拥塞
+给定时间周期T内 全网客户端会定时请求服务器,
+前提 这个请求不是 用户点击的,
+则再假设一个时间段t, 每个客户端经过周期T后,
+在0~t中随机一个数n, 客户端睡眠n后在请求
+t小于T, 注意量级关系
+比如业务T为24小时, t可以设置为1h

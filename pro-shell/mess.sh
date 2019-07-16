@@ -163,3 +163,22 @@ highlight -O ansi $file
 
 astyle -A14 $file # --style=google
 astyle -A16 $file # --style=mozilla
+
+function abspath() {
+  local base=`basename $1`
+  local dir=`cd $(dirname $1); pwd`
+  echo $dir/$base
+}
+
+# pretty print csv
+cat m.csv | column -t -s,
+
+# tmpfs
+mount -t tmpfs -o size=512m tmpfs /home/admin/tmp_workspace
+
+# sort specific rows and column
+# row <= 3 will not be sorted; column == 4 will be sorted
+awk 'NR<=3 {print;next} {print | "sort -k4" }'
+
+# most common and simpler diff
+sdiff -s file1 file2

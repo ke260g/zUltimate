@@ -25,6 +25,11 @@ flex-doc bison-doc
 # code statistic
 cloc statsvn gitstats
 
+# kernel hacker
+apt install linux-manual-<version>
+apt install linux-headers-<version>-all
+apt install linux-source-<version>
+
 # gui
 ghex doxygen doxygen-gui cmake-gui
 alacarte fcitx-tables dmz-cursor-theme xserver-xorg-input-synaptics
