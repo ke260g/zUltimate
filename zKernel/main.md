@@ -66,3 +66,5 @@ int mod_timer(struct timer_list *timer); // 修改已经在内核定时器链表
 
 工作队列 (实现中断分层, 避免中断丢失)
 工作队列是异步任务
+
+与用户层通讯手段: netlink, /proc, ioctl回调, sockopt, 共享内存

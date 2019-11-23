@@ -7,8 +7,34 @@ https://blog.csdn.net/zqixiao_09/article/details/79057301
 iptables对于链路层的arp包暂时无能为力
 ebtables倒是可以过滤掉二层arp包
 
-netlink 代码实现demo, 内核层, 用户层
-https://blog.csdn.net/stone8761/article/details/72780863
-使用libnl的demo
-https://blog.csdn.net/yldfree/article/details/82593873
-使用形式上, 在用户态是一个sock_fd与内核进行send/recv通讯
+每个协议簇有5个HOOK点,
+每个HOOK点有个list,里头是一堆回调
+注册回调时, 要传入优先级, (我怀疑 注册时根据优先级插入list的位置)
+优先级有宏, 每个协议簇的宏是独立的, 但是实际上就是-150~150的数字
+
+
+```c
+// 5个HOOK点
+/* Bridge Hooks */
+#define NF_BR_PRE_ROUTING	0 /* After promisc drops, checksum checks. */
+
+#define NF_BR_LOCAL_IN		1 /* If the packet is destined for this box. */
+
+#define NF_BR_FORWARD		2 /* If the packet is destined for another interface. */
+
+#define NF_BR_LOCAL_OUT		3 /* Packets coming from a local process. */
+
+#define NF_BR_POST_ROUTING	4 /* Packets about to hit the wire. */
+
+// 注册/注销
+int nf_register_hook(struct nf_hook_ops *reg);
+void nf_unregister_hook(struct nf_hook_ops *reg);
+// 注册后, reg中记录着list的节点, 用于在注销的时候 从链表中删除
+
+// 回调函数有固定的返回值, 内核根据返回值对 数据包 进行后续操作
+NF_ACCEPT
+NF_DROP
+NF_STOLEN
+NF_QUEUE
+NF_REPEAT
+```
