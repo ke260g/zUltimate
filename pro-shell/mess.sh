@@ -182,3 +182,10 @@ awk 'NR<=3 {print;next} {print | "sort -k4" }'
 
 # most common and simpler diff
 sdiff -s file1 file2
+
+# convert CRLF to LF
+find . -type f | while read file; do sed -i "s|\r$||" $file; done
+
+# 研究了好久的命令
+# 实现1. 本地脚本远端执行 2. 远端输出重定向到远端文件 3. 远端输出回显到本地
+sshpass -p $pass ssh $ssh_options $user@$addr "sh -x - 2>&1 | tee -a $log" < $task_script
