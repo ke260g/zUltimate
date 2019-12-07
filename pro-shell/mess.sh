@@ -188,4 +188,13 @@ find . -type f | while read file; do sed -i "s|\r$||" $file; done
 
 # 研究了好久的命令
 # 实现1. 本地脚本远端执行 2. 远端输出重定向到远端文件 3. 远端输出回显到本地
+export ssh_options=" -o ConnectTimeout=1 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "
 sshpass -p $pass ssh $ssh_options $user@$addr "sh -x - 2>&1 | tee -a $log" < $task_script
+
+# chroot
+mount -t proc proc $chrootfs/proc
+mount -t devtmpfs devtmpfs $chrootfs/dev
+mount -t devpts devpts $chrootfs/dev/pts
+
+# 批量重命名后缀 .log -> .txt
+find . -type f -name "*.log" | while read src; do mv $src $(echo $src | sed "s|\.log$|\.txt|"); done

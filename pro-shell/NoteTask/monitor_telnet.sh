@@ -7,5 +7,5 @@ ip=127.0.0.1
 port= 
 while true; do
 	filename=/var/module_$(date +%Y%m%d_%X).telnet.log
-	((sleep 1 && echo "dlanrecover" && sleep 2 && echo "set $MOD specific cmd" && sleep $SEC) | telnet $ip $port) > $filename
+	((sleep 1 && echo "password" && sleep 2 && echo "set $MOD specific cmd" && sleep $SEC) | telnet $ip $port) > $filename
 done
