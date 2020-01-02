@@ -15,15 +15,20 @@ make ycm_core
 #download llvm-src
 #download clang-src
 #download python3, with correspond to gvim
-#compile llvm-sr/clang-src with mingw32-64
-#do not use python2
+# compile llvm-src/clang-src with mingw32-64:
+# cmake entry setting:
+#    do not use python2
 #    set python3/libpython.dll.a path
 #    install prefix to the same path
 #    build_type with Release (this is recommanded)
-#compile YouCompleteMe with mingw32-64
+# compile YouCompleteMe with mingw32-64:
+# cmake entry setting:
+#    cmake-source => .vim/bundle/YouCompleteMe/third_party/ycmd/cpp
+#    EXTERNAL_LIBCLANG_PATH => llvm/bin/libclang.dll
 #    LIBCLANG_PATH point to the dll compiled with mingw32
 #    mingw32-make.exe ycm_core
 #    boost maybe failed with "std::snprintf", edit it to "_snprintf"
+#    build_type with Release (this is recommanded)
 
 # YouCompleteMe On Cygwin
 export LIBCLANG_PATH=/path/to/libclang.dll

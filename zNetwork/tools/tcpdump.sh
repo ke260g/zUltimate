@@ -61,6 +61,9 @@ tcpdump -nn -v port ftp or ftp-data
 # ipv6
 tcpdump -nn ip6 proto 6
 
+# vlan
+tcpdump -i eth0 vlan 1
+
 #####################################################################
 # http scenario
 # '-l' line mode, useful for many special scenario
