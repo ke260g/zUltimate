@@ -5,9 +5,9 @@ import http.server
 PORT = 8080
 # DIR = r'D:\zHome\srv'
 # DIR = r'D:\zHome'
-DIR = r'E:\sdk\trunk\Sdk_Development_Code\qdazzle_h5sdk\debug_demo\dist'
+DIR = r'.'
 
-print("serving at port %d", PORT)
+print("serving at port %d"%(PORT))
 
 os.chdir(DIR)
 
