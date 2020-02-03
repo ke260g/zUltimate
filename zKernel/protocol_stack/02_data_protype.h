@@ -7,12 +7,12 @@ struct iovec {
 };
 
 struct file_operations {
+
 };
 
 struct file {
 	const struct file_operations	*f_op;
 } __attribute__((aligned(4)));	/* lest something weird decides that 2 is OK */
-
 
 // include/linux/net.h
 struct socket {
@@ -55,13 +55,14 @@ struct tcp_sock {
 struct softnet_data { };
 DECLARE_PER_CPU_ALIGNED(struct softnet_data, softnet_data);
 
-// 原始 网络帧
+// 原始 网络帧  skbuff.h
 struct sk_buff {
     /* These two members must be first. */
     struct sk_buff      *next;
     struct sk_buff      *prev;
     struct sock      *sk;
 };
+
 struct sk_buff_head {
     /* These two members must be first.*/
     struct sk_buff    *next;
@@ -69,12 +70,9 @@ struct sk_buff_head {
 };
 
 // 网络设备对象
-struct net_device {
-
-};
+struct net_device { };
 
 struct proto_ops { }; // socket操作
-
 struct proto { }; // sock操作
 
 
@@ -82,7 +80,7 @@ struct proto { }; // sock操作
 struct inet_protosw {
     unsigned short    type;    /* This is the 2nd argument to socket(2). */
     unsigned short    protocol; /* This is the 3rd argument to socket(2) */
-    struct proto*prot;
+    struct proto *prot;
     const struct proto_ops *ops;
 };
 

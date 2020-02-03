@@ -4,7 +4,7 @@
 static const struct net_proto_family svc_family_ops;
 static const struct net_proto_family inet_family_ops;
 static const struct net_proto_family inet6_family_ops;
-static const struct net_proto_family *net_families[NPROTO];
+static const struct net_proto_family *net_families[NPROTO]; // 容器, xxx_family_ops->family 作为id
 
 struct proto tcp_prot;
 struct proto udp_prot;
