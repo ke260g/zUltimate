@@ -69,3 +69,8 @@ https://www.cnblogs.com/zhiliang9408/p/11370838.html
 1. 用户层 socket_family = NETLINK_GENERIC/NETLINK_USER
 2. nl_groups = 0
 3. 自定义 nl_type
+
+
+如果使用 netlink 作为同步内核和用户 的媒介;
+设计上, 容易出现的性能问题是 内存双倍的问题.
+如果是这种问题, 建议使用内核和用户 的共享内存
