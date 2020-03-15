@@ -69,22 +69,22 @@ Address accessed is value found in Rn, and then Rn's value is increased/decrease
     return from the subroutine
 4. `POP    {r5-r7,pc}`   ; release argument from stack
 
-# 5. condition jump
-0. 	BEQ ; equal ; Z
-1. 	BNE ; not equal ; !Z
-2. 	BCS or BHS ; carry set / unsigned higher or same ; C
-3. 	BCC or BLO ; carry clear / unsigned lower ; !C
-4. 	BMI ; minus / negative ; N
-5.  BPL ; plus / positive or zero ; !N
-6. 	BVS ; overflow set ; V
-7. 	BVC ; overflow clear ; !V
-8. 	BHI ; unsigned higher ; C && !Z
-9. 	BLS ; unsigned lower or same ; !C || Z
-10. BGE ; signed greater than or equal ; N == V
-11. BLT ; signed less than ; N != V
-12. BGT ; signed greater than ; !Z && (N == V)
-13. BLE ; signed greater than or equal ; Z || (N != V)
-14. BAL or omitted 		always 		true
+# 5. condition jump （B S)
+0. 	EQ ; equal ; Z
+1. 	NE ; not equal ; !Z
+2. 	CS or HS ; carry set / unsigned higher or same ; C
+3. 	CC or LO ; carry clear / unsigned lower ; !C
+4. 	MI ; minus / negative ; N
+5.  PL ; plus / positive or zero ; !N
+6. 	VS ; overflow set ; V
+7. 	VC ; overflow clear ; !V
+8. 	HI ; unsigned higher ; C && !Z
+9. 	LS ; unsigned lower or same ; !C || Z
+10. GE ; signed greater than or equal ; N == V
+11. LT ; signed less than ; N != V
+12. GT ; signed greater than ; !Z && (N == V)
+13. LE ; signed greater than or equal ; Z || (N != V)
+14. AL or omitted 		always 		true
 # 6. registers
 # 7. memory initialize
 primes  DCD   2, 3, 5, 7, 11, 13, 17, 19
