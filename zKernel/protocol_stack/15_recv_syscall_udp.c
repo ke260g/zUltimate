@@ -1,28 +1,67 @@
-SYSCALL_DEFINE3(recvmsg, int, fd, struct msghdr __user *, msg,
-		unsigned int, flags)
+SYSCALL_DEFINE5(recvmmsg, int, fd, struct mmsghdr __user *, mmsg,
+		unsigned int, vlen, unsigned int, flags,
+		struct timespec __user *, timeout)
 {
-	if (flags & MSG_CMSG_COMPAT)
-		return -EINVAL;
-	return __sys_recvmsg(fd, msg, flags);
+	if (!timeout) // 无 timeout, 非阻塞, 5th-argument 为 NULL
+		return __sys_recvmmsg(fd, mmsg, vlen, flags, NULL);
+    // ... copy_from_user timeout参数
+	datagrams = __sys_recvmmsg(fd, mmsg, vlen, flags, &timeout_sys);
+    // ... cooy_to_user   timeout参数(返回输出)
+	return datagrams;
 }
 
-long __sys_recvmsg(int fd, struct msghdr __user *msg, unsigned flags)
+int __sys_recvmmsg(int fd, struct mmsghdr __user *mmsg, unsigned int vlen,
+		   unsigned int flags, struct timespec *timeout)
 {
     // ...
     // 通过fd 获取 socket
     // 1. int fd 获取 struct fd
     // 2. fd->file->private_data, sock_map_fd()函数中设置private_data为socket
+ 	datagrams = 0;
 	sock = sockfd_lookup_light(fd, &err, &fput_needed);
-	if (!sock)
-		goto out;
+    // ...
 
-	err = ___sys_recvmsg(sock, msg, &msg_sys, flags, 0);
+	entry = mmsg;
+	compat_entry = (struct compat_mmsghdr __user *)mmsg;
 
+	while (datagrams < vlen) {
+		if (MSG_CMSG_COMPAT & flags) {
+            // ... 处理 MSG_CMSG_COMPAT 逻辑, 
+            // ... 仅 entry 与 compat_entry 的结构体稍微不同
+		} else {
+			err = ___sys_recvmsg(sock,
+					     (struct msghdr __user *)entry,
+					     &msg_sys, flags & ~MSG_WAITFORONE,
+					     datagrams);
+			if (err < 0)
+				break;
+			err = put_user(err, &entry->msg_len);
+			++entry;
+		}
+
+		if (err)
+			break;
+		++datagrams;
+
+		/* MSG_WAITFORONE turns on MSG_DONTWAIT after one packet */
+		if (flags & MSG_WAITFORONE)
+			flags |= MSG_DONTWAIT;
+
+		if (timeout) {
+            // ... 超时break逻辑
+		}
+
+		/* Out of band data, return right away */
+		if (msg_sys.msg_flags & MSG_OOB)
+			break;
+	}
+    // ... handler errror
+out_put:
     // if sockfd_lookup_light 找不到 socket
     // 则 fput_light 销毁 file
 	fput_light(sock->file, fput_needed);
-out:
-	return err;
+
+	return datagrams;
 }
 
 // 该函数 本质把 msghdr 从用户态, 切到内核态
@@ -78,7 +117,6 @@ static int ___sys_recvmsg(struct socket *sock, struct msghdr __user *msg,
     // 1. msg_sys->msg_name = addr; 指向kernelspace       => move_addr_to_user
     // 2. msg_sys->msg_iov指向的数据 赋值到 iov指向的数据 => copy_from_user, msg_sys->msg_iov之前是指向userspace的
     // 3. msg_sys->msg_iov = iov
-    // Note: msg_iov->iov_base 才是指向物理意义上的用户空间, 用于存储buffer
 	if (MSG_CMSG_COMPAT & flags)
 		err = verify_compat_iovec(msg_sys, iov, &addr, VERIFY_WRITE);
 	else
