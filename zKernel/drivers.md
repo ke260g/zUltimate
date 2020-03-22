@@ -9,7 +9,7 @@ cls = class_create(THIS_MODULE, );
 device_create();
 cdev_init();
 cdev_add();
-
+class_create
 cdev_del();
 device_destroy();
 class_destroy();
