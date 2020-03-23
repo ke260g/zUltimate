@@ -31,5 +31,19 @@ KERN_DEBUG    Used for debugging messages.
 + /var/log/messages
 + loglevel control /proc/sys/kernel/printk*
 + dmesg
++ default loglevel is DEFAULT_MESSAGE_LOGLEVEL
++ /etc/syslog.conf 系统进程 一般读取这个文件; 重定向kernel-log; ( rsyslog klogd )
++ rate limit; `if (printk_ratelimit()) printk("messages");` 避免打爆内核日至缓存
+## redirect kernel console message
+```c++
+char data[2];
+data[0] = TIOCL_SETKMSGREDIRECT; // linux/tiocl.h
+data[1] = 1;  // means tty#1, implementation is in tioclinux(); 
+ioctl(STDIN_FILENO, TIOCLINUX, data);
+```
 
-# 
+# 3 /proc （ proc_fs.h + seq_file.h )
+
+# 4 ioctl  (copy_to_user, copy_from_user)
+
+

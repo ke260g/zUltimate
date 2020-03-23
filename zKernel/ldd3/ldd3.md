@@ -50,3 +50,16 @@ unsigned long copy_from_user(void *to, const void __user *from, unsigned long co
 
 
 
+# /proc include/linux/proc_fs.h
++ can be used for communication between user
+1. /proc dir  opertation `proc_symlink(); proc_mkdir(); remove_proc_subtree();`
+2. /proc file opertation `proc_create(); proc_remove();`
+3. /proc file_operations `struct proc_dir_entry->file_operations`
+
+# include/linux/seq_file.h
++ 用于减少 /proc文件的体积
+1. 实现 seq_operations
+    + start/stop/next/show
+2. 实现 file_operations 时 使用seq接口
+    + open/release/read/write/llseek => seq_read/seq_release/seq_read/seq_write/seq_lseek
++ 最终流程 syscall -> file_operation -> seq_接口 -> seq_operations
