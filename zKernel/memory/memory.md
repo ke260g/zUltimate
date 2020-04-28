@@ -11,6 +11,7 @@ memory allocated with vmalloc() is not physically contiguous.
 MemFree:           62028 kB
 Cached:            55616 kB
 Buffers:            5240 kB
+Slab:              <---- is the total number of /proc/slabinfo
 
 free(1) buffer and cached:
 Buffer is something that has yet to be "written" to disk. 

@@ -92,3 +92,16 @@ tcpdump -s0 -A -nn -l | egrep -i 'Set-Cookie|Host:|Cookie:'
 # not standard icmp packet
 tcpdump 'icmp[icmptype] != icmp-echo and icmp[icmptype] != icmp-echoreply'
 #####################################################################
+
+tcpdump 'ip[2:2]'
+tcpdump 'ether[0:2]'
+
+tcpdump -i ge0_0_49 'ether[12:2] = 0xcc99'
+# 第 12个byte 开始 2个bytes, == 0xcc99 的以太网帧
+
+tcpdump -vv -x -X -s 1500 -i eth1 'port 80'
+# -vv：更详细的输出信息。
+# -x：在解析和打印时，作为打印每一包的头信息的补充(默认情况下 TCPDump 只打印每一包的头信息)，将每一包的数据内容也打印出来。
+# -X：在解析和打印时，作为打印每一包的头信息的补充，将每一包的内容信息也以十六进制和 ASCII 码的方式打印出来。这样对于解析新协议是很方便的。
+# -s 1500：粗略地显示每一包的信息而不是默认的 68。这在查看大量信息时是很有用的。
+# -i eth1：监控 eth1 接口。

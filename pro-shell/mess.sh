@@ -198,3 +198,7 @@ mount -t devpts devpts $chrootfs/dev/pts
 
 # 批量重命名后缀 .log -> .txt
 find . -type f -name "*.log" | while read src; do mv $src $(echo $src | sed "s|\.log$|\.txt|"); done
+
+
+# ping add timestamp
+ping 115.239.211.112 | awk '{ print $0"\t" strftime("%Y-%m-%d %H:%M:%S",systime())}' 
