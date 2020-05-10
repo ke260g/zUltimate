@@ -55,7 +55,7 @@ unsigned long copy_from_user(void *to, const void __user *from, unsigned long co
 + 用于减少 /proc文件的体积
 1. 实现 seq_operations
     + start/stop/next/show
-2. 实现 file_operations 时, 使用seq接口
-    + open/release/read/write/llseek => seq_open/seq_release/seq_read/seq_write/seq_lseek
-+ 最终流程 `syscall` -> `file_operation` -> `seq_*` -> `seq_operations`
-
+2. 实现 file_operations 时 使用seq接口
+    + open/release/read/write/llseek => seq_read/seq_release/seq_read/seq_write/seq_lseek
++ 最终流程 syscall -> file_operation -> seq_接口 -> seq_operations
++ 例子: uptime.c
