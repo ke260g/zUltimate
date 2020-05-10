@@ -19,7 +19,7 @@ int alloc_chrdev_region(dev_t *dev, unsigned baseminor, unsigned count, const ch
 void __unregister_chrdev(unsigned int major, unsigned int baseminor, unsigned int count, const char *name);
 
 每个major的minor最大容量是固定的;
-每个major可以被多次注册minor; 前提是多次不同 minor值域没有交叉
+每个major可以被多次注册minor; 前提是多次不同 minor 值域没有交叉
 
 struct cdev *cdev_alloc(void);
 void cdev_init(struct cdev *cdev, const struct file_operations *fops);
@@ -60,8 +60,40 @@ ssize_t (*read)(struct file *filp, char __user *buff, size_t, loff_t *offp);
  */
 ssize_t (*write)(struct file *filp, const char __user *buff, size_t, loff_t *offp);
 
-
-
 // note
-//  1. inode->i_cdev is point to the cdev, added by cdev_add(), which will be shared by other open.
-//  2. struct my_dev *dev = container_of(inode->i_cdev, struct my_dev, cdev); // cdev is a member of my_dev
+// 1. inode->i_cdev is point to the cdev, added by cdev_add(), which will be shared by other open.
+// 2. struct my_dev *dev = container_of(inode->i_cdev, struct my_dev, cdev); // cdev is a member of my_dev
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

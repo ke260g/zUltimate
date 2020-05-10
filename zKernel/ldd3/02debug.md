@@ -44,6 +44,15 @@ ioctl(STDIN_FILENO, TIOCLINUX, data);
 
 # 3 /proc （ proc_fs.h + seq_file.h )
 
-# 4 ioctl  (copy_to_user, copy_from_user)
+
+
+
+
+# 4 ioctl  ( copy_to_user, copy_from_user )
+1. 
+
+
+
+
 
 
