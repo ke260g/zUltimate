@@ -83,3 +83,7 @@ read:  (pull + copy_from)*N
 
 1. 以外网帧的头, 是哪里填充的, 驱动吗?
 2. 如果我用户态发送 二层报文, 里面带上了以太网帧的头, 如何通知驱动不要再加一次?
+
+
+brctl show
+cat /sys/class/net/eth0/ifindex

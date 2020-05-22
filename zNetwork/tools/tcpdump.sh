@@ -106,3 +106,6 @@ tcpdump -vv -x -X -s 1500 -i eth1 'port 80'
 # -X：在解析和打印时，作为打印每一包的头信息的补充，将每一包的内容信息也以十六进制和 ASCII 码的方式打印出来。这样对于解析新协议是很方便的。
 # -s 1500：粗略地显示每一包的信息而不是默认的 68。这在查看大量信息时是很有用的。
 # -i eth1：监控 eth1 接口。
+
+tcpdump -n 
+# don't resolve hostname (it will be faster)

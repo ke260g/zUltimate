@@ -31,3 +31,9 @@ sinfo->dev_no
 
 bcmsh version
 bcmsh soc
+
+
+三层口查看
+bcmsh l3 intf show
+bcmsh l3 egress show
+bcmsh l3 defip show
