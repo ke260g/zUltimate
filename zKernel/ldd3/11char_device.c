@@ -63,37 +63,3 @@ ssize_t (*write)(struct file *filp, const char __user *buff, size_t, loff_t *off
 // note
 // 1. inode->i_cdev is point to the cdev, added by cdev_add(), which will be shared by other open.
 // 2. struct my_dev *dev = container_of(inode->i_cdev, struct my_dev, cdev); // cdev is a member of my_dev
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -67,3 +67,5 @@ int mod_timer(struct timer_list *timer); // 修改已经在内核定时器链表
 
 与用户层通讯手段: netlink, /proc, ioctl回调, sockopt, 共享内存
 
+
+mutex本质是信号量为1 的 sem

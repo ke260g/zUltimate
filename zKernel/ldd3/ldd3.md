@@ -44,18 +44,7 @@ unsigned long copy_to_user(void __user *to, const void *from, unsigned long coun
 unsigned long copy_from_user(void *to, const void __user *from, unsigned long count);
 ```
 
-# /proc include/linux/proc_fs.h
-+ can be used for communication between user
-+ can be used for debug
-1. /proc dir  opertation `proc_symlink(); proc_mkdir(); remove_proc_subtree();`
-2. /proc file opertation `proc_create(); proc_remove();`
-3. /proc file_operations `struct proc_dir_entry->file_operations`
-
-# include/linux/seq_file.h
-+ 用于减少 /proc文件的体积
-1. 实现 seq_operations
-    + start/stop/next/show
-2. 实现 file_operations 时 使用seq接口
-    + open/release/read/write/llseek => seq_read/seq_release/seq_read/seq_write/seq_lseek
-+ 最终流程 syscall -> file_operation -> seq_接口 -> seq_operations
-+ 例子: uptime.c
+场景: 解决了什么问题?
+原理 or 机制: 宏观的框架?
+方法: 有哪些接口可以调用? 怎么调用的? 哪里有例子?
+实现 ldd3中这个概念比较弱
