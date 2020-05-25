@@ -69,3 +69,33 @@ static int __netif_receive_skb_core(struct sk_buff *skb, bool pfmemalloc);
 // --------------------------------------------------
 // end: link层 > socket层
 // --------------------------------------------------
+
+
+// --------------------------------------------------
+// begin: link层
+// --------------------------------------------------
+const struct header_ops eth_header_ops = {
+	.create		= eth_header,
+	.parse		= eth_header_parse,
+	.rebuild	= eth_rebuild_header,
+	.cache		= eth_header_cache,
+	.cache_update	= eth_header_cache_update,
+};
+
+void ether_setup(struct net_device *dev)
+{
+	dev->header_ops		= &eth_header_ops;
+	dev->type		= ARPHRD_ETHER;
+	dev->hard_header_len 	= ETH_HLEN;
+	dev->mtu		= ETH_DATA_LEN;
+	dev->addr_len		= ETH_ALEN;
+	dev->tx_queue_len	= 1000;	/* Ethernet wants good queues */
+	dev->flags		= IFF_BROADCAST|IFF_MULTICAST;
+	dev->priv_flags		|= IFF_TX_SKB_SHARING;
+
+	memset(dev->broadcast, 0xFF, ETH_ALEN);
+};
+// 以太网驱动, 同一调用这个方法初始化, dev->header_ops->create 方法会把以太网头塞进去
+// --------------------------------------------------
+// end: link层
+// --------------------------------------------------
