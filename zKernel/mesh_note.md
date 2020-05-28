@@ -37,3 +37,9 @@ bond口子接口    = /sys/class/net/$interface/bonding/slaves
 bond口子接口    = /sys/class/net/$interface/bonding/active_slave
 bond口子接口    = /sys/class/net/$interface/slave_$slave
 bond口子接口    = /sys/class/net/$interface/lower_$slave
+
+设置mtu 
+ioctl(3, SIOCSIFMTU, {ifr_name="ge0_0_26", ifr_mtu=1600}) = 0
+
+
+

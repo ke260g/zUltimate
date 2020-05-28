@@ -87,3 +87,17 @@ read:  (pull + copy_from)*N
 
 brctl show
 cat /sys/class/net/eth0/ifindex
+
+# 队列操作
+// 创建
+void skb_queue_head_init(struct sk_buff_head *list);
+// 出列 模板1
+struct sk_buff *skb_peek(const struct sk_buff_head *list_);      // 非原子操作; 需要外层锁
+struct sk_buff *skb_peek_tail(const struct sk_buff_head *list_); // 非原子操作; 需要外层锁
+void skb_unlink(struct sk_buff *skb, struct sk_buff_head *list); // 出列后手动释放
+// 出列 模板2
+struct sk_buff *skb_dequeue(struct sk_buff_head *list);
+struct sk_buff *skb_dequeue_tail(struct sk_buff_head *list);
+// 入列
+void skb_queue_head(struct sk_buff_head *list, struct sk_buff *newsk);
+void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk);
