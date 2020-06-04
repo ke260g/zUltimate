@@ -37,3 +37,12 @@ bond口子接口    = /sys/class/net/$interface/bonding/slaves
 bond口子接口    = /sys/class/net/$interface/bonding/active_slave
 bond口子接口    = /sys/class/net/$interface/slave_$slave
 bond口子接口    = /sys/class/net/$interface/lower_$slave
+
+设置mtu 
+ioctl(3, SIOCSIFMTU, {ifr_name="ge0_0_26", ifr_mtu=1600}) = 0
+
+
+
+三层口需要关掉mac地址学习; 且从三层口上来的报文不会学习到二层mac表中
+
+ovsdb-client transact '["OpenSwitch", {"op": 2, "table": "Interface", "where": [["name", "==", "ge0_0_8"]], "row": {"admin_state":false}}]'

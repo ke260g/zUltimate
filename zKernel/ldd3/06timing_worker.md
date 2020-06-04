@@ -1,0 +1,37 @@
+
+
+
+
+# 1. schedule
+
+ 
+# 2. timer
+SMP 架构中; 同一个timer尽量让同一个CPU运行; 以有效利用 L2Cache
+in_atomic() 与 in_interrupt() 与 in_irq() 的区别??
++ 原始性能需求:
+    1. Timer management must be as lightweight as possible. (提高实时性)
+    2. he design should scale well as the number of active timers increases. (运行在系统中的定时器是海量的)
+    3. Most timers expire within a few seconds or minutes at most, while timers with long delays are pretty rare.
+    4. A timer should run on the same CPU that registered it. (SMP架构中, 有效利用CPU-Cache)
+## 2.1 方法 ( 创建 / 增加 / 销毁 )
+```c++
+#define DEFINE_TIMER(_name, _function, _expires, _data)
+#define init_timer(timer)
+
+// 设置属性: TIMER_DEFERRABLE, TIMER_PINNED can be used Or-bit
+void timer_setup(struct timer_list *timer, void (*callback)(struct timer_list *), unsigned int flags);
+// 增删改
+void add_timer(struct timer_list *timer);
+int del_timer(struct timer_list * timer);
+int mod_timer(struct timer_list *timer, unsigned long expires);
+```
+## 2.2 实现 (为了满足原始性能需求)
++ internal_add_timer
++ update_process_times > run_local_timers > raise_softirq(TIMER_SOFTIRQ); > run_timer_softirq > __run_timers
+## 2.3 调试
+
+# 3. Tasklets
++ 一些特性
+    1. 
+    2. 
+## 3.1 方法

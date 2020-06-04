@@ -308,7 +308,22 @@ void write_sequnlock_bh(seqlock_t *lock);
 
 # 9 RCU (Read-Copy-Update) (arch相关) (高性能锁)
 http://www2.rdrop.com/users/paulmck/rclock/
-## 
+1. 使用场景: 读多, 写非常非常少的场景
+2. 写的流程:
+    1. 先复制
+    2. 写完之后等待所有读释放
+    3. 把新的对象替换原有对象 
+    4. 释放原有对象的资源
+## 9.1 方法
+## 9.2 实现
+
+# 10 kfifo 内存屏障保证原子性
+1. 使用场景1: 单生产者, 单消费者 不需要外层锁
+2. 使用场景2: 单写多读, 读之前需要额外加锁
+3. 使用场景3：单读多写, 写之前需要额外加锁
+## 10.1 方法
+## 10.2 实现
+## 10.3 例子 drivers\dma\qcom\hidma_ll.c
 
 # 99 killable 和 interruptible 的区别
 1. 跟踪 xxx_killabel xxx_interruptible 的调用栈
