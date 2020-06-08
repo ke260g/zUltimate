@@ -3,8 +3,21 @@
 
 
 # 1. schedule
+```c++
+extern signed long schedule_timeout(signed long timeout);
+extern signed long schedule_timeout_interruptible(signed long timeout);
+extern signed long schedule_timeout_killable(signed long timeout);
+extern signed long schedule_timeout_uninterruptible(signed long timeout);
+asmlinkage void schedule(void);
+extern void schedule_preempt_disabled(void);
+```
 
- 
+# 2. wait
+```c++
+wait_event_timeout();
+```
+
+
 # 2. timer
 SMP 架构中; 同一个timer尽量让同一个CPU运行; 以有效利用 L2Cache
 in_atomic() 与 in_interrupt() 与 in_irq() 的区别??
@@ -23,6 +36,7 @@ void timer_setup(struct timer_list *timer, void (*callback)(struct timer_list *)
 // 增删改
 void add_timer(struct timer_list *timer);
 int del_timer(struct timer_list * timer);
+// expires > 0 && 没有激活; mod_timer会激活timer
 int mod_timer(struct timer_list *timer, unsigned long expires);
 ```
 ## 2.2 实现 (为了满足原始性能需求)
@@ -32,6 +46,13 @@ int mod_timer(struct timer_list *timer, unsigned long expires);
 
 # 3. Tasklets
 + 一些特性
-    1. 
+    1. 运行在中断上下文中
     2. 
 ## 3.1 方法
+```c++
+#define DECLARE_TASKLET(name, func, data) 
+#define DECLARE_TASKLET_DISABLED(name, func, data)
+
+```
+
+# 4. workqueue

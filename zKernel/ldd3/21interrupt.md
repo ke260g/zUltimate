@@ -61,3 +61,22 @@ IRQF_EARLY_RESUME   睡眠后启动时; 在syscore流程中开启中断; 而不�
 ## share interrupt
 + 用于 pci bus, universal-serial-bus 等下接各种各样的硬件
 + 注册时 flag 带上 IRQF_SHARED, 使得同一个 中断ID 被多个硬件共享
+
+## 中断掩码检测
++ 检测机制: 关闭全局中断; 触发单个设备中断; 从而获取到实际的中断bit
+### 内核检测方法 probe_irq_on + probe_irq_off
+```c++
+unsigned long probe_irq_on(void); // 开启 irq 检测
+int probe_irq_off(unsigned long); // 停止 irq 检测
+
+void usage() {
+    // 1. clear device state
+    int mask = probe_irq_on();
+    // 2. enable and trigger the device's interrupt once
+    // 3. delay  some time for detection
+    int irq = probe_irq_off(mask);
+    int ret = request_irq(irq, handler, irq_flags, devname, data);
+}
+```
+
+### Top and Bottom Halves (中断上半部分; 中断下半部分)
