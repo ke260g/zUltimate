@@ -24,6 +24,11 @@ void timer_setup(struct timer_list *timer, void (*callback)(struct timer_list *)
 void add_timer(struct timer_list *timer);
 int del_timer(struct timer_list * timer);
 int mod_timer(struct timer_list *timer, unsigned long expires);
+
+/* mod_timer 会自动激活没有激活的定时器回调;
+ * mod_timer 更常见的用法是 在 回调执行完后再次 mod_timer(timer, jiffies + ms_to_jiffies(1000));
+ * 从而实现循环定时器
+ */
 ```
 ## 2.2 实现 (为了满足原始性能需求)
 + internal_add_timer
@@ -32,6 +37,9 @@ int mod_timer(struct timer_list *timer, unsigned long expires);
 
 # 3. Tasklets
 + 一些特性
-    1. 
+    1. 运行在软中断上下文中
     2. 
 ## 3.1 方法
+```c++
+
+```
