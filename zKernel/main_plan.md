@@ -16,3 +16,13 @@ ldd3 at first
  https://linux-kernel-labs.github.io/refs/heads/master memmory section
 
 ## 3. more = ( lkd3 ulk )
+
+
++ 学习完一轮 ldd3 后拆分为若干个专题; 假装自己没看过ldd3
+
+中断todolist
+内存屏障
+原子变量的底层实现
+RCU
+自旋锁的实现
+中断的实现

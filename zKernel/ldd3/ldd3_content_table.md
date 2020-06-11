@@ -4,7 +4,7 @@
    Time, Delays, and Deferred Work   (must)
    Allocating Memory                 (must)
    Communicating with Hardware       (suggest)
-    Interrupt Handling               (must)
+    Interrupt Handling               (must) (fini)
     Data Types in the Kernel         (must)
     Memory Mapping and DMA           (suggest)
     The Linux Device Model           (suggest)
