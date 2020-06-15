@@ -1,13 +1,13 @@
 1. Building and Running Modules      (must) (fini)
 2. Debugging Techniques              (must) (fini)
 3. Concurrency and Race Conditions   (must) (fini)
-   Time, Delays, and Deferred Work   (must) (fini)
-   Allocating Memory                 (must)
-   Communicating with Hardware       (suggest)
+    Time, Delays, and Deferred Work  (must) (fini)
+    Allocating Memory                (must) (fini)
+    Communicating with Hardware      (must)
+    Memory Mapping and DMA           (need)
     Interrupt Handling               (must) (fini)
     Data Types in the Kernel         (must) (fini) (useless)
-    Memory Mapping and DMA           (suggest)
-    The Linux Device Model           (suggest)
+    The Linux Device Model           (need)
 4. Char Drivers                      (must) (fini)
    PCI Drivers
    Block Drivers
