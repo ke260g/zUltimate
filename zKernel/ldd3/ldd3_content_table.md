@@ -5,7 +5,7 @@
     Allocating Memory                (must) (fini)
     Communicating with Hardware      (must)
     Memory Mapping and DMA           (need)
-    Interrupt Handling               (must) (fini)
+    Interrupt Handling               (must) (fini) (useless)
     Data Types in the Kernel         (must) (fini) (useless)
     The Linux Device Model           (need)
 4. Char Drivers                      (must) (fini)

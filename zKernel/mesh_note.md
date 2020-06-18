@@ -52,3 +52,5 @@ mount -t debugfs nodev /sys/kernel/debug/
 运行时内核函数地址
 https://blog.csdn.net/gatieme/article/details/78310036
 
+
+make -C $KENNEL_DIRECTORY M=$MODULE_DIRECTORY modules
