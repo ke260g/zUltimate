@@ -64,7 +64,8 @@ void foobar_interface_setup(struct net_device *);
 ///////////////////////////////////////////////////
 
 // 1. 创建 ========================================
-struct net_device *alloc_netdev(int sizeof_priv,                                const char *name, void (*setup)(struct net_device *));
+struct net_device *alloc_netdev(int sizeof_priv,
+    const char *name, void (*setup)(struct net_device *));
 // 封装: name = eth%d, setup = ether_setup,
 struct net_device *alloc_etherdev(int sizeof_priv);
 ///////////////////////////////////////////////////
@@ -81,5 +82,3 @@ void unregister_netdev(struct net_device *dev);
 void unregister_netdev(struct net_device *dev);
 ///////////////////////////////////////////////////
 ```
-
-
