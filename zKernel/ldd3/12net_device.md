@@ -12,7 +12,6 @@ Several hundred sockets can be multiplexed on the same physical interface.
 
 The  network  subsystem  of  the  Linux  kernel  is  designed  to  be  completely  protocol-independent.
 
-drivers/net/loopback.c
 [TOC]
 example: plip.c e100.c loopback.c
 
@@ -67,7 +66,10 @@ struct net_device {
 
 ## 网卡设备方法 struct net_device_ops
 ```c++
-
+struct net_device_ops {
+	int   (*ndo_init)(struct net_device *dev);    // 一般不用; 在网卡驱动中 初始化
+	void  (*ndo_uninit)(struct net_device *dev);  // 一般不用; 销毁先由驱动 反初始化
+}
 ```
 
 ## 网卡设备管理 ( 创建 / 注册 / 注销 / 释放 )
