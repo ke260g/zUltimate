@@ -67,8 +67,52 @@ struct net_device {
 ## 网卡设备方法 struct net_device_ops
 ```c++
 struct net_device_ops {
-	int   (*ndo_init)(struct net_device *dev);    // 一般不用; 在网卡驱动中 初始化
-	void  (*ndo_uninit)(struct net_device *dev);  // 一般不用; 销毁先由驱动 反初始化
+    /* 基础回调 */
+	int  (*ndo_init)(struct net_device *dev);    // register_netdev 回调; 更多地在alloc_netdev的setup初始化
+	void (*ndo_uninit)(struct net_device *dev);  // unregister_netdev 回调; 一般不用; 销毁先由驱动 反初始化
+    int  (*ndo_open)(struct net_device *dev);    // ifconfig $net_device up   回调;
+    int  (*ndo_stop)(struct net_device *dev);     // ifconfig $net_device down 回调;
+	netdev_tx_t  (*ndo_start_xmit)(struct sk_buff *skb, struct net_device *dev); // dev_queue_xmit 发包回调
+	void (*ndo_set_rx_mode)(struct net_device *dev); // 设置 broadcast, multicast 的回调
+    void (*ndo_set_mac_address)(struct net_device *dev, void *addr); // 设置 mac 地址回调; 必须非空; 否则mac无法设置
+    int  (*ndo_validate_addr)(struct net_device *dev); // 检查 mac地址 是否合法; 必须非空; 一般用 eth_validate_addr
+	int  (*ndo_change_mtu)(struct net_device *dev, int new_mtu); // 必须非空; 设置 mtu 回调
+	int  (*ndo_do_ioctl)(struct net_device *dev, struct ifreq *ifr, int cmd); // 非标准的 ioctl 回调; 可以为空
+    
+    struct net_device_stats* (*ndo_get_stats)(struct net_device *dev); // 统计信息 回调; 驱动维护 net_device_stats 对象
+    /* 更多方法 */
+    void (*ndo_tx_timeout) (struct net_device *dev); // 驱动层 发包超时回调;
+                                                     // 驱动 dev->_tx[] 为 tx_queue; 其中有 trans_start 发包时间记录
+                                                     // register_netdev 注册了定时器 dev_watchdog 检查 trans_start
+                                                     // ndo_start_xmit 中; 必须更新 dev->_tx[]->trans_start 
+                                                     // dev_watchdog 检查 出来超时后; 调用 ndo_tx_timeout 回调
+                                                     // 调用 netif_trans_update 更新 dev->_tx[]->trans_start
+#ifdef CONFIG_NET_POLL_CONTROLLER
+	void (*ndo_poll_controller)(struct net_device *dev);
+	int  (*ndo_netpoll_setup)(struct net_device *dev, struct netpoll_info *info);
+	void (*ndo_netpoll_cleanup)(struct net_device *dev);
+#endif
+    /* neigh 方法 */
+    int	 (*ndo_neigh_construct)(struct net_device *dev, struct neighbour *n);
+	void (*ndo_neigh_destroy)(struct net_device *dev, struct neighbour *n);
+
+    /* fdb  方法 */
+    int			(*ndo_fdb_add)(struct ndmsg *ndm,
+					       struct nlattr *tb[],
+					       struct net_device *dev,
+					       const unsigned char *addr,
+					       u16 vid,
+					       u16 flags);
+	int			(*ndo_fdb_del)(struct ndmsg *ndm,
+					       struct nlattr *tb[],
+					       struct net_device *dev,
+					       const unsigned char *addr,
+					       u16 vid);
+	int			(*ndo_fdb_dump)(struct sk_buff *skb,
+						struct netlink_callback *cb,
+						struct net_device *dev,
+						struct net_device *filter_dev,
+						int *idx);
 }
 ```
 

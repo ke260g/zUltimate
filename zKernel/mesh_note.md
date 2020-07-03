@@ -54,3 +54,6 @@ https://blog.csdn.net/gatieme/article/details/78310036
 
 
 make -C $KENNEL_DIRECTORY M=$MODULE_DIRECTORY modules
+
+ioctl 设置网卡; fd 都是随便的 socket() 即可; 然后 ifr_name 作为源只是设置的 net_device
+
