@@ -7,7 +7,7 @@ import sys
 # DIR = r'D:\zHome'
 DIR = r'.'
 
-PORT = 8080 if (len(sys.argv) < 1 or type(sys.argv[1]) == int) else int(sys.argv[1])
+PORT = 8080 if (len(sys.argv) < 2 or type(sys.argv[1]) == int) else int(sys.argv[1])
 print("serving at port %d"%(PORT))
 
 os.chdir(DIR)
