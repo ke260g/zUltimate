@@ -101,3 +101,12 @@ struct sk_buff *skb_dequeue_tail(struct sk_buff_head *list);
 // 入列
 void skb_queue_head(struct sk_buff_head *list, struct sk_buff *newsk);
 void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk);
+
+# 销毁方法
+```c++
+void dev_kfree_skb(struct sk_buff *skb); // 非中断上下文中
+void dev_kfree_skb_irq(struct sk_buff *skb); // 中断上下文中
+void dev_kfree_skb_any(struct sk_buff *skb); // 内嵌判断逻辑 自适应free; 耗性能
+
+
+```

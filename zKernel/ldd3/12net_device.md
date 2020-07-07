@@ -45,7 +45,11 @@ struct net_device {
     netdev_features_t features; /* 定义在 <linux/netdev_features.h> NETIF_F_* */
 
     struct netdev_hw_addr_list mc; /* Multicast mac addresses */ /* 组播表 */
-}
+
+    struct net_device_stats	stats; /* 统计信息集合 */
+    atomic_long_t rx_dropped; /* 仅协议栈 可写; 驱动层使用 @stats */
+    atomic_long_t tx_dropped; /* 仅协议栈 可写; 驱动层使用 @stats */
+};
 
 /* 常用 IFF_* 标记 */
 #define IFF_UP        // 驱动层只读; 只能由内核接口设置 
@@ -143,4 +147,61 @@ void unregister_netdev(struct net_device *dev);
 // 4. 释放 ========================================
 void unregister_netdev(struct net_device *dev);
 ///////////////////////////////////////////////////
+```
+
+## 网卡设备状态 ( start / stop / linkup / linkdown )
+```c++
+
+// 硬件 linkup / linkdown
+void netif_carrier_off(struct net_device *dev); // set linkup
+void netif_carrier_on(struct net_device *dev);  // set linkdown
+bool netif_carrier_ok(const struct net_device *dev); // get
+```
+
+## 网卡收包逻辑
+1. 关掉硬件中断
+2. dev_alloc_skb
+3. 从 dma 拷贝到 skb
+4. skb_put(sbk, len)
+5. 设置 skb->dev 收包interface
+6. 设置 skb->protocol = eth_type_trans(skb, dev);
+7. 设置 skb->->ip_summed = CHECKSUM_XXX;
+8. stats.rx_packets++;
+9. stats.rx_bytes += skb->len
+10. netif_receive_skb
+11. 重新拉起中断
+
+## 网卡发包逻辑
+1. 
+
+
+## 网卡收发统计 struct net_device_stats
+```c++
+    /* 正常收发计数 */
+    unsigned long rx_packets;
+    unsigned long tx_packets;
+    unsigned long rx_bytes;
+    unsigned long tx_bytes;
+    /* 异常收发计数 */
+    unsigned long rx_errors;
+    unsigned long tx_errors;
+    unsigned long rx_dropped;
+    unsigned long tx_dropped;
+    /* 其他 */
+    unsigned long multicast;  // 组播报文
+    unsigned long collisions; // ??
+}
+```
+
+# 待整理笔记
+```c++
+struct sk_buff {
+    shinfo(struct sk_buff *skb);
+    unsigned int shinfo(skb)->nr_frags;
+    skb_frag_t shinfo(skb)->frags;
+}; // zero-copy 矢量DMA的SKB逻辑
+
+// sbk 方法
+struct sk_buff *alloc_skb(unsigned int len, int priority);
+struct sk_buff *dev_alloc_skb(unsigned int len);
 ```
