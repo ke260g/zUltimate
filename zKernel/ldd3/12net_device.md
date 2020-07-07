@@ -87,6 +87,7 @@ struct net_device_ops {
 
     struct net_device_stats* (*ndo_get_stats)(struct net_device *dev); // 统计信息 回调; 驱动维护 net_device_stats 对象
     /* 更多方法; 可以为空 */
+    int	watchdog_timeo;   // dev_watchdog 的超时间隔
     void (*ndo_tx_timeout) (struct net_device *dev); // 驱动层 发包超时回调;
                                                      // 驱动 dev->_tx[] 为 tx_queue; 其中有 trans_start 发包时间记录
                                                      // register_netdev 注册了定时器 dev_watchdog 检查 trans_start
@@ -111,15 +112,30 @@ struct net_device_ops {
                         struct net_device *dev, struct net_device *filter_dev, int *idx);
 }
 
-int ndo_open(struct net_device *dev) {
+```
+### 网卡设备发包缓存队列 netif_queue 方法
+```c++
+void netif_start_queue(struct net_device *dev);
+void netif_stop_queue(struct net_device *dev);
+void netif_wake_queue(struct net_device *dev); // start_queue; 且唤醒 协议栈 重新发送阻塞的 skb
+void netif_tx_disable(struct net_device *dev); // 确保 所有CPU 都 netif_stop_queue
+
+int ndo_open(struct net_device *dev) { // ifconfig $interface up
     // ... resources preparation
     netif_start_queue(dev); // open 方法尾 必须调用
 }
-int ndo_stop(struct net_device *dev) {
+int ndo_stop(struct net_device *dev) { // ifconfig $interface down
     netif_stop_queue(dev);  // stop 方法头 必须调用
     // ... resources release
 }
+int hardware_resource_busy_callback() { // 硬件资源 满了; 指示协议栈不可发包
+    netif_stop_queue(dev);
+}
+int hardware_resource_free_callback() { // 硬件资源 充足; 指示协议栈可以发包
+    netif_wake_queue(dev); // <--- 此处必须用 wake 而不是 start 方法
+}
 ```
+
 
 ## 网卡设备管理 ( 创建 / 注册 / 注销 / 释放 )
 ```c++
