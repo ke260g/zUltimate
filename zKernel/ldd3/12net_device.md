@@ -80,7 +80,8 @@ struct net_device_ops {
 	int  (*ndo_do_ioctl)(struct net_device *dev, struct ifreq *ifr, int cmd); // 非标准的 ioctl 回调; 可以为空
     
     struct net_device_stats* (*ndo_get_stats)(struct net_device *dev); // 统计信息 回调; 驱动维护 net_device_stats 对象
-    /* 更多方法 */
+    /* 更多方法; 可以为空 */
+    int	watchdog_timeo;   // dev_watchdog 的超时间隔
     void (*ndo_tx_timeout) (struct net_device *dev); // 驱动层 发包超时回调;
                                                      // 驱动 dev->_tx[] 为 tx_queue; 其中有 trans_start 发包时间记录
                                                      // register_netdev 注册了定时器 dev_watchdog 检查 trans_start

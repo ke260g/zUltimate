@@ -57,3 +57,11 @@ make -C $KENNEL_DIRECTORY M=$MODULE_DIRECTORY modules
 
 ioctl 设置网卡; fd 都是随便的 socket() 即可; 然后 ifr_name 作为源只是设置的 net_device
 
+
+ 其实netfliter是个大的框架，在ipv4中对应的应用层工具是iptables，在bridge中对应的应用层工具是ebtables，在arp中对应的应用层工具是arptables
+
+iptables 中有raw，filter，nat，mangle，security，5个table，
+
+ebtables 中有broute，filter，nat，3个table，
+
+arptables 中有filter，1个table
