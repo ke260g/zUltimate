@@ -8,8 +8,6 @@ Most programming problems can be splited into two parts:
 1. what capabilities are to be provided(mechanism)
 2. how capabilities can be used (policy)
 
-
-
 Linux driver developers should pay particular attension to this fundamental concept: write kernel code to access the hardware, but don't force particular policies on the user.
 
 trade-off between the desire to present the user with as many options as possible and the time you have to write the driver
@@ -48,3 +46,19 @@ unsigned long copy_from_user(void *to, const void __user *from, unsigned long co
 原理 or 机制: 宏观的框架?
 方法: 有哪些接口可以调用? 怎么调用的? 哪里有例子?
 实现 ldd3中这个概念比较弱
+
+
+# Network interfaces tips
+Network interfaces are the third standard class of Linux devices. (1. char; 2. block)
+
+not in /dev/
+not file_operations
+Several hundred sockets can be multiplexed on the same physical interface.
+
+块设备   只需要 响应 内核的请求
+网络设备 还需要 响应 收包; 然后回传到协议栈
+一系列 administrative tasks:
+ setting addresses, modifying transmission parameters,
+ maintaining  traffic  and  error  statistics
+
+The  network  subsystem  of  the  Linux  kernel  is  designed  to  be  completely  protocol-independent.

@@ -108,5 +108,7 @@ void dev_kfree_skb(struct sk_buff *skb); // 非中断上下文中
 void dev_kfree_skb_irq(struct sk_buff *skb); // 中断上下文中
 void dev_kfree_skb_any(struct sk_buff *skb); // 内嵌判断逻辑 自适应free; 耗性能
 
-
+// sbk 方法
+struct sk_buff *alloc_skb(unsigned int len, int priority);
+struct sk_buff *dev_alloc_skb(unsigned int len); // 中断上下文中
 ```

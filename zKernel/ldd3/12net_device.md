@@ -1,21 +1,6 @@
-Network interfaces are the third standard class of Linux devices. (1. char; 2. block)
-
-not in /dev/
-not file_operations
-Several hundred sockets can be multiplexed on the same physical interface.
-
-块设备   只需要 响应 内核的请求
-网络设备 还需要 响应 收包; 然后回传到协议栈
-一系列 administrative tasks:
- setting addresses, modifying transmission parameters,
- maintaining  traffic  and  error  statistics
-
-The  network  subsystem  of  the  Linux  kernel  is  designed  to  be  completely  protocol-independent.
-
 [TOC]
-example: plip.c e100.c loopback.c
-
-## 网卡设备定义 struct netdevice
+# 1. 对象
+## 1.1 网卡设备定义 struct netdevice
 ```c++
 struct net_device {
     char name[IFNAMSIZ];     /* 网卡名称 */
@@ -70,7 +55,7 @@ struct net_device {
 #define NETIF_F_TSO      // 指示 协议栈网卡自带 TCP segmentation offloading 功能
 ```
 
-## 网卡设备方法 struct net_device_ops
+## 1.2 网卡设备方法 struct net_device_ops
 ```c++
 struct net_device_ops {
     /* 基础回调 */
@@ -111,9 +96,28 @@ struct net_device_ops {
     int (*ndo_fdb_dump)(struct sk_buff *skb, struct netlink_callback *cb,
                         struct net_device *dev, struct net_device *filter_dev, int *idx);
 }
-
 ```
-### 网卡设备发包缓存队列 netif_queue 方法
+
+## 1.3 网卡收发统计 struct net_device_stats
+```c++
+    /* 正常收发计数 */
+    unsigned long rx_packets;
+    unsigned long tx_packets;
+    unsigned long rx_bytes;
+    unsigned long tx_bytes;
+    /* 异常收发计数 */
+    unsigned long rx_errors;
+    unsigned long tx_errors;
+    unsigned long rx_dropped;
+    unsigned long tx_dropped;
+    /* 其他 */
+    unsigned long multicast;  // 组播报文
+    unsigned long collisions; // ??
+}
+```
+
+# 2. 方法
+## 2.1 网卡缓存队列 ( start / stop / wake / disable )
 ```c++
 void netif_start_queue(struct net_device *dev);
 void netif_stop_queue(struct net_device *dev);
@@ -136,8 +140,22 @@ int hardware_resource_free_callback() { // 硬件资源 充足; 指示协议栈�
 }
 ```
 
+## 2.2 网卡硬件状态 ( linkup / linkdown )
+```c++
+// 硬件 linkup / linkdown
+void netif_carrier_off(struct net_device *dev); // set linkup
+void netif_carrier_on(struct net_device *dev);  // set linkdown
+bool netif_carrier_ok(const struct net_device *dev); // get
 
-## 网卡设备管理 ( 创建 / 注册 / 注销 / 释放 )
+int hardware_linkup_callback() {
+    netif_carrier_on(dev);
+}
+int hardware_linkdown_callbak() {
+    netif_carrier_off(dev);
+}
+```
+
+## 2.3 网卡设备管理 ( 创建 / 注册 / 注销 / 释放 )
 ```c++
 struct net_device;
 
@@ -165,16 +183,10 @@ void unregister_netdev(struct net_device *dev);
 ///////////////////////////////////////////////////
 ```
 
-## 网卡设备状态 ( start / stop / linkup / linkdown )
-```c++
 
-// 硬件 linkup / linkdown
-void netif_carrier_off(struct net_device *dev); // set linkup
-void netif_carrier_on(struct net_device *dev);  // set linkdown
-bool netif_carrier_ok(const struct net_device *dev); // get
-```
 
-## 网卡收包逻辑
+# 3. 使用
+## 3.1 网卡收包逻辑
 1. 关掉硬件中断
 2. dev_alloc_skb
 3. 从 dma 拷贝到 skb
@@ -187,37 +199,29 @@ bool netif_carrier_ok(const struct net_device *dev); // get
 10. netif_receive_skb
 11. 重新拉起中断
 
-## 网卡发包逻辑
-1. 
+## 3.2 网卡发包逻辑
+1. dev_queue_xmit
+2. ndo_hard_xmit 回调
+3. stats.tx_packets++
+4. stats.tx_bytes += skb->len
+5. skb copyto dma
+6. enable interrupt
+8. trigger hardware send packet
+9. tx interrupt callback
+10. disable interrupt
+11. handle resouces-management and statistic issues
 
+## 3.3 网卡硬件poll
++ 本质是为了解决 网卡大量收包 导致的频繁中断问题
 
-## 网卡收发统计 struct net_device_stats
-```c++
-    /* 正常收发计数 */
-    unsigned long rx_packets;
-    unsigned long tx_packets;
-    unsigned long rx_bytes;
-    unsigned long tx_bytes;
-    /* 异常收发计数 */
-    unsigned long rx_errors;
-    unsigned long tx_errors;
-    unsigned long rx_dropped;
-    unsigned long tx_dropped;
-    /* 其他 */
-    unsigned long multicast;  // 组播报文
-    unsigned long collisions; // ??
-}
-```
-
-# 待整理笔记
+## 3.4 网卡零拷贝 shinfo
 ```c++
 struct sk_buff {
     shinfo(struct sk_buff *skb);
     unsigned int shinfo(skb)->nr_frags;
     skb_frag_t shinfo(skb)->frags;
 }; // zero-copy 矢量DMA的SKB逻辑
-
-// sbk 方法
-struct sk_buff *alloc_skb(unsigned int len, int priority);
-struct sk_buff *dev_alloc_skb(unsigned int len);
 ```
+
+# 4. 例子
+example: plip.c e100.c loopback.c
