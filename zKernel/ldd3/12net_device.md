@@ -213,6 +213,14 @@ void unregister_netdev(struct net_device *dev);
 
 ## 3.3 网卡硬件poll
 + 本质是为了解决 网卡大量收包 导致的频繁中断问题
++ 但是, 在收包较少的场景中, 反而会影响性能(poll的本质耗时)
+### 3.3.1 步骤
++ 实现 net_device_ops->ndo_poll_controller
+1. 关掉硬件中断
+2. 调用中断回调 (该中断回调一般 等同收发包的中断回调)
+3. 拉起硬件中断
+### 3.3.2 策略
++ 查找 ndo_poll_controller 在内核协议栈中的调用关系
 
 ## 3.4 网卡零拷贝 shinfo
 ```c++
