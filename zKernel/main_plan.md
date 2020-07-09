@@ -21,8 +21,33 @@ ldd3 at first
 + 学习完一轮 ldd3 后拆分为若干个专题; 假装自己没看过ldd3
 
 中断todolist
+
+
+# 中断
+定时器的实现
+workqueue 再次深入了解
+
+# 网络
+网络组播
+协议栈发包
+网卡驱动的 netpoll
+netlink
+netfilter
+bridge 转发
+vlan 转发
+nftable
+rtnl_link_register
+notifier_block; register_netdevice_notifier
+
+# 调度
+进程调度
+
+# 内存
 内存屏障
 原子变量的底层实现
 RCU
 自旋锁的实现
 中断的实现
+
+# 驱动
+misc
