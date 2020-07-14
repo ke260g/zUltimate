@@ -16,8 +16,10 @@ nft add chain bridge filter forward { type filter hook forward priority 0\; poli
 nft add chain bridge filter output  { type filter hook output   priority 0\; }
 
 # 3. 允许部分转发
-nft add rule bridge filter forward meta iifname \"ge*\" meta oifname \"ext1\" continue
-nft add rule bridge filter forward meta iifname \"ext1\" meta oifname \"ge*\" continue
+nft add rule bridge filter forward meta iifname \"ge*\" meta oifname \"ext1\" accept
+nft add rule bridge filter forward meta iifname \"ext1\" meta oifname \"ge*\" accept
+nft add rule bridge filter forward meta iifname \"ge*\" meta oifname \"ext2\" accept
+nft add rule bridge filter forward meta iifname \"ext2\" meta oifname \"ge*\" accept
 
 # 删除 bridge->filter
 nft delete table bridge filter

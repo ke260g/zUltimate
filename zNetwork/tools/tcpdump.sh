@@ -96,9 +96,9 @@ tcpdump 'icmp[icmptype] != icmp-echo and icmp[icmptype] != icmp-echoreply'
 tcpdump 'ip[2:2]'
 tcpdump 'ether[0:2]'
 
-tcpdump -i ge0_0_49 'ether[12:2] = 0xcc99'
-tcpdump -i ge0_0_49 ether proto 0xc996
-# 第 12个byte 开始 2个bytes, == 0xcc99 的以太网帧
+tcpdump -i eth0 'ether[12:2] = 0xcc99' # 第 12个byte 开始 2个bytes, == 0xcc99 的以太网帧
+tcpdump -i eth0 ether proto 0xc996
+tcpdump -i eth0 ether src aa:bb:cc:dd:ee:ff and ether dst aa:bb:cc:dd:ee:ff
 
 tcpdump -vv -x -X -s 1500 -i eth1 'port 80'
 # -vv：更详细的输出信息。
