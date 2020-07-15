@@ -24,7 +24,7 @@ The  smallest  allocation  thatkmalloccan handle is as big as 32 or 64 bytes, de
 
 | flag | feature | scene |
 | --:  | :-: | :-- |
-| GFP_ATOMIC | Never Sleep | interrupt; outside of aprocess context |
+| GFP_ATOMIC | Never Sleep | interrupt; outside of a process context |
 | GFP_KERNEL | May Sleep   | Most normal allocation |
 | GFP_USER   | May Sleep   | allocates user-space pages |
 

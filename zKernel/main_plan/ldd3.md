@@ -47,7 +47,6 @@ unsigned long copy_from_user(void *to, const void __user *from, unsigned long co
 方法: 有哪些接口可以调用? 怎么调用的? 哪里有例子?
 实现 ldd3中这个概念比较弱
 
-
 # Network interfaces tips
 Network interfaces are the third standard class of Linux devices. (1. char; 2. block)
 
@@ -62,3 +61,21 @@ Several hundred sockets can be multiplexed on the same physical interface.
  maintaining  traffic  and  error  statistics
 
 The  network  subsystem  of  the  Linux  kernel  is  designed  to  be  completely  protocol-independent.
+
+## content table
+1. Building and Running Modules      (must) (fini)
+2. Debugging Techniques              (must) (fini)
+3. Concurrency and Race Conditions   (must) (fini)
+    Time, Delays, and Deferred Work  (must) (fini) (core)
+    Allocating Memory                (must) (fini) (collect message)
+    Communicating with Hardware      (must) (fini) (collect message)
+    Memory Mapping and DMA           (must) (fini) (core)
+    Interrupt Handling               (must) (fini)
+    Data Types in the Kernel         (must) (fini) (useless)
+    The Linux Device Model           (need)
+4. Char Drivers                      (must) (fini)
+   PCI Drivers
+   Block Drivers
+   USB Drivers
+   Network Drivers                   (must) (fini)
+   TTY Drivers

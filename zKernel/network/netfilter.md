@@ -1,3 +1,10 @@
+其实netfliter是个大的框架，
+在ipv4中对应的应用层工具是iptables，   有raw，filter，nat，mangle，security，5个table，
+在bridge中对应的应用层工具是ebtables， 有broute，filter，nat，3个table，
+在arp中对应的应用层工具是arptables,    有filter，1个table
+
+
+
 白痴文
 使用与实现 c代码例子 (需要点ko开发的前提知识)
 https://blog.csdn.net/zhangskd/article/details/22678659

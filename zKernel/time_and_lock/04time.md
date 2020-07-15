@@ -31,6 +31,24 @@ extern unsigned long volatile __jiffy_data jiffies;
 # 2.4 时钟注册方法
 `clocksource_register_hz()`
 
+# 3. 延时
+```c++
+// 阻塞性延时
+#include <linux/delay.h>
+void ndelay(unsigned long nsecs);
+void udelay(unsigned long usecs);
+void mdelay(unsigned long msecs);
+
+// 非阻塞性延时; 
+void msleep(unsigned int millisecs);
+void ssleep(unsigned int seconds);
+unsigned long msleep_interruptible(unsigned int millisecs);
+
+// 如果是从用户态临时切换
+// 让进程进入可中断的睡眠状态, 
+// 返回被提早唤醒时剩余的毫秒数
+```
+
 # 99 high freq
 1. 放大内核CPU软件系数
 2. 关闭软狗
