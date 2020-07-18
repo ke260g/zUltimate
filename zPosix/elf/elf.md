@@ -35,7 +35,7 @@ Linking View                             Execution View
 .rodata
 
 
-SHT_PROGBITS
+SHT_PROGBITS           : .rodata / .data / .text / .init / .fini / .got / .got.plt / .eh_frame / .data.rel.ro
 SHT_SYMTAB
 SHT_STRTAB
 SHT_RELA
@@ -48,6 +48,8 @@ SHT_SYNSYM             : .dynsym / .symtab
 SHT_LOPROC             : .dynamic, SharedLibrary
 SHT_HIPROC / SHT_LOUSER:  架构相关
 HIUSER
+INIT_ARRAY             : .init_array
+FINI_ARRAY             : .fini_array
 
 ## 1.4 segment 类型
 .PHDR
