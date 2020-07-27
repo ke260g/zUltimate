@@ -26,3 +26,6 @@ ovsdb-client transact '["OpenSwitch", {"op": 2, "table": "Interface", "where": [
 
 ioctl 设置网卡; fd 都是随便的 socket() 即可; 然后 ifr_name 作为源只是设置的 net_device
 
+/proc/net/dev 网卡列表一览
+/sys/class/net/$interface 通过 access 判定网卡是否存在
+
