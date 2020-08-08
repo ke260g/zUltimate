@@ -315,6 +315,21 @@ http://www2.rdrop.com/users/paulmck/rclock/
     3. 把新的对象替换原有对象 
     4. 释放原有对象的资源
 ## 9.1 方法
+```c++
+#include <liunx/rcu_node_tree.h>
+#include <liunx/rcu_segcblist.h>
+#include <liunx/rcu_sync.h>
+#include <liunx/rculist.h>
+#include <liunx/rculist_bl.h>
+#include <liunx/rculist_nulls.h>
+#include <liunx/rcupdate.h>
+#include <liunx/rcupdate_wait.h>
+#include <liunx/rcutiny.h>
+#include <liunx/rcutree.h>
+#include <liunx/rcuwait.h>
+
+
+```
 ## 9.2 实现
 
 # 10 kfifo 内存屏障保证原子性
@@ -322,6 +337,7 @@ http://www2.rdrop.com/users/paulmck/rclock/
 2. 使用场景2: 单写多读, 读之前需要额外加锁
 3. 使用场景3：单读多写, 写之前需要额外加锁
 ## 10.1 方法
+
 ## 10.2 实现
 ## 10.3 例子 drivers\dma\qcom\hidma_ll.c
 

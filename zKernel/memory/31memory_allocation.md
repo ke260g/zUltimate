@@ -28,16 +28,20 @@ The  smallest  allocation  thatkmalloccan handle is as big as 32 or 64 bytes, de
 | GFP_KERNEL | May Sleep   | Most normal allocation |
 | GFP_USER   | May Sleep   | allocates user-space pages |
 
+## 1.1 其他变体接口
++ kvzalloc(); 内嵌__GFP_ZERO 标记; 申请初始化为 0 的内存. 调用者如 `alloc_etherdev()`
+
 # 2. kmem_*（memory pool) /proc/slabinfo
 ```c++
 struct kmem_cache *kmem_cache_create(const char *name, 
             size_t size, size_t align,
+            
             unsigned long flags, void (*ctor)(void *));
 void kmem_cache_destroy(struct kmem_cache *s);
 int kmem_cache_shrink(struct kmem_cache *cachep);
 
 void *kmem_cache_alloc(struct kmem_cache *, gfp_t flags);
-void kmem_cache_free(struct kmem_cache *c, void *b)
+void kmem_cache_free(struct kmem_cache *c, void *b);
 ```
 1. The cache keeps a pointer to the name, rather than copying it, 
 so the driver should pass in apointer to a name in static storage (usually the name is just a literal string). 

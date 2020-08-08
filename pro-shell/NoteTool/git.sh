@@ -33,6 +33,9 @@ git reset --hard "<hash code>"
 git config --global core.editor vim
 
 # save password
+git config --global user.email  ""
+git config --global user.name   ""
+git config --global credential.helper store
 git config --global credential.helper 'cache --timeout=3600'
 # clear password
 git config --global --unset credential.helper

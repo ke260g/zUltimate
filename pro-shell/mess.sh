@@ -179,6 +179,7 @@ mount -t tmpfs -o size=512m tmpfs /home/admin/tmp_workspace
 # sort specific rows and column
 # row <= 3 will not be sorted; column == 4 will be sorted
 awk 'NR<=3 {print;next} {print | "sort -k4" }'
+ovsdb-client dump Port | awk 'NR<=3 {print;next} {print | "grep \"ge1_3_2\\\"\" " }'
 
 # most common and simpler diff
 sdiff -s file1 file2
