@@ -49,6 +49,9 @@ unsigned long msleep_interruptible(unsigned int millisecs);
 // 返回被提早唤醒时剩余的毫秒数
 ```
 
+# 4. 经验
++ 不建议在中断、频繁调用的函数中使用 current_kernel_time 方法; 该方法的实时性有偏差??
+
 # 99 high freq
 1. 放大内核CPU软件系数
 2. 关闭软狗

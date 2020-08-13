@@ -104,3 +104,21 @@ thread apply $threadId1 $threadId2 continue # 批量 继续执行制定线程
 + http://www.kernel.org/doc/htmldocs/kgdb.html
 + http://www.ibm.com/developerworks/cn/linux/l-cn-gdbmp/
 + http://www.kgdb.info/
+
+### so 符号的索引路径
+1. 关于GDB调试时，依赖库搜索路径规则为：
+　　1）使用solib-absolute-prefix进行搜索
+　　2）使用solib-search-path进行搜索
+　　3）使用$PATH进行搜索
+　　4）使用$LD_LIBRARY_PATH进行搜索
+2. 按上面说的规则举例说明：
+　　1）（solib-absolute-prefix）/home/share/my_library/cmake/libmy_library.so
+　　2）（solib-search-path）/libmy_library.so
+　　3）（$PATH）/（solib-absolute-prefix）/home/share/my_library/cmake/libmy_library.so
+　　4）（$LD_LIBRARY_PATH）/（solib-absolute-prefix）/home/share/my_library/cmake/libmy_library.so
+
+# 99. 实际任务
+## Q: 不打断重启进程的前提下进行gdb
+1. `gdb -p $(pidof process_name)`
+2. `(gdb) symbol-file $path/to/process/symbol`
+3. `(gdb) 
