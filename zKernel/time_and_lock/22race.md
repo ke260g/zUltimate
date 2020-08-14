@@ -279,7 +279,7 @@ u64 get_jiffies_64(void)
 }
 ```
 
-## 8.1 方法
+## 8.1 方法 (初始化 / r占用 / r释放 / w占用 / w释放)
 ```c++
 #define seqlock_init(x) // 初始化
 
@@ -327,10 +327,58 @@ http://www2.rdrop.com/users/paulmck/rclock/
 #include <liunx/rcutiny.h>
 #include <liunx/rcutree.h>
 #include <liunx/rcuwait.h>
-
-
 ```
 ## 9.2 实现
+## 9.3 例子
+### 9.3.1 rcu多读单写
+```c++
+void get() {
+    rcu_read_lock();
+    list_for_each_entry_rcu() {
+        if (found) _entry = entry;
+    }
+    rcu_read_unlock();
+    return _entry;
+}
+void set() {
+    list_add_rcu();
+}
+```
++ 这个场景比较特殊: 对象尺度是固定有限, 且全生命周期不销毁;
+
+### 9.3.2 rcu多读多写
+```c++
+void get() {
+    rcu_read_lock();
+    list_for_each_entry_rcu() {
+        if (found) _entry = entry;
+    }
+    rcu_read_unlock();
+    return _entry;
+}
+
+void add() {
+    spin_lock();
+    list_for_each_entry() {
+
+    }
+    if (!found) list_add_rcu();
+    spin_unlock();
+}
+
+void del() {
+    spin_lock();
+    list_for_each_entry() {
+        if (found) {
+            _entry = entry;
+            list_del_rcu();
+        }
+        synchronize_rcu();
+        free(_entry)
+    }
+    spin_unlock();
+}
+```
 
 # 10 kfifo 内存屏障保证原子性
 1. 使用场景1: 单生产者, 单消费者 不需要外层锁

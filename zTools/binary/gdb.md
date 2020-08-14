@@ -1,5 +1,6 @@
-# GDB
-### 实际经验中 如果要调试 需要那些功能?
+[TOC]
+# 1. gdb 日常使用
+## 1.1 实际经验中 如果要调试 需要那些功能?
 + add/del 断点 ( break点 watch点 event)
 + 运行程序 执行到断点 stepinto stepover
 + 打印变量 单个变量/复杂变量
@@ -7,10 +8,10 @@
 + 堆栈
 + 跨线程调试 即停止部分线程
 
-### 常用参数
+## 1.2 常用参数
 + gdb -q attach pid
 
-### 常用cmd
+## 1.3 常用cmd
 + 运行 run (指定参数) start(跑到main暂停) continue(跑到下个断点)
 + file 加载文件 可以是core文件 可以可执行文件
 + break 设置断点
@@ -44,7 +45,7 @@
 + info reg xxx // 查看制定寄存器
   + `info reg $pic/eab/$rsp/$rip` 例子
 
-### examine / printf 's format
+### 1.3.1 examine / printf 's format
 t 二进制
 o 八进制
 x 十六进制 a 十六进制有符号
@@ -53,7 +54,7 @@ i 指令地址 (常用)
 c 字符
 f 浮点数
 
-### examine x 详解直接显示内存block
+### 1.3.2 examine x 详解直接显示内存block
 + examine 缩写为 x
 + 模式 `x /<number><format><unit>` 
 + number 表示数字 表示要看内存后多少个unit
@@ -64,16 +65,17 @@ w 表示int   (4 byte)
 g 表示long  (8 byte)
 + format 根据单元显示format
 
-### printf 高级用途 (动态数组 动态结构体)
+### 1.3.3 printf 高级用途 (动态数组 动态结构体)
 + printf 字符串 字符串即c源码 继承local/global符号的
 + printf *(struct xxx *)0xfff 以可视化的形式打印结构体
 + printf *0xffff@10 
 + printf funcname::staic_variable 函数局部变量名
 
-### 跨线程调试
+# 2. 跨线程 / 跨进程
 + 需求: 暂停部分线程 & 其他线程继续运行
 + 初始化设置 + 在指定线程设置断点 + 跳转指定线程 + 继续执行指定线程
 + 场景模拟: 暂停部分线程{a b c} 在线程a中运行一段代码 跳转到线程b运行一段代码
+## 2.1 跨线程
 ```sh
 # 初始化
 set target-async 1
@@ -85,7 +87,7 @@ thread $threadId # 跳转线程 必须是调试状态的
 thread apply $threadId1 $threadId2 continue # 批量 继续执行制定线程
 ```
 
-### 跨进程控制: follow-fork-mode/detach-on-fork
+## 2.2 跨进程 follow-fork-mode/detach-on-fork
 + set detach-on-fork on/off
     + on:  断开调试follow-fork-mode指定的进程
     + off: gdb将控制父进程和子进程(没有调试的则suspend, 这样导致crash)
@@ -93,19 +95,7 @@ thread apply $threadId1 $threadId2 continue # 批量 继续执行制定线程
     + parent: fork之后继续调试父进程，子进程不受影响
     + child: fork之后调试子进程，父进程不受影响
 
-### kgdb
-+ 即用gdb调试内核, 利用gdbserver
-+ target板子上内核开选项
-+ client机子 gdb连接过去
-+ git://git.kernel.org/pub/scm/utils/kernel/kgdb/agent-proxy.git
-+ http://sourceware.org/gdb/current/onlinedocs/gdb/
-+ http://www.sourceware.org/gdb/onlinedocs/gdbint.html
-+ https://kgdb.wiki.kernel.org/
-+ http://www.kernel.org/doc/htmldocs/kgdb.html
-+ http://www.ibm.com/developerworks/cn/linux/l-cn-gdbmp/
-+ http://www.kgdb.info/
-
-### so 符号的索引路径
+# 3. so 符号的索引路径
 1. 关于GDB调试时，依赖库搜索路径规则为：
 　　1）使用solib-absolute-prefix进行搜索
 　　2）使用solib-search-path进行搜索
@@ -117,8 +107,57 @@ thread apply $threadId1 $threadId2 continue # 批量 继续执行制定线程
 　　3）（$PATH）/（solib-absolute-prefix）/home/share/my_library/cmake/libmy_library.so
 　　4）（$LD_LIBRARY_PATH）/（solib-absolute-prefix）/home/share/my_library/cmake/libmy_library.so
 
-# 99. 实际任务
+# 4. core 文件
++ /proc/sys/kernel/core_pattern
+  + 记录程序生成的core的路径名 默认是core
+  + 如果是相对路径 怎在程序crash时的
++ file 可以看到那个文件是core
++ readelf -h 文件名 可以看到 Type: Core
++ 开启core
+  + ulimit -c number // core stack block size bytes
+  + ulimit -c unlimited
++ gdb 中 file corefilename 即可进入调试阶段
++ /proc/sys/kernel/core_pattern 的format
+%%
+%p pid
+%u uid
+%g gid
+%e 执行文件名
+%s signal
+%t 时间
+%h 主机名
+
+# 90. 实际任务
 ## Q: 不打断重启进程的前提下进行gdb
 1. `gdb -p $(pidof process_name)`
-2. `(gdb) symbol-file $path/to/process/symbol`
-3. `(gdb) 
+2. `(gdb) symbol-file $/path/to/process/symbol`
+3. `(gdb) solib-absolute-prefix $/path/to/debug_symbol_rootfs`
+## Q: 多线程调试
+1. `(gdb) thread apply all bt` 打印所有线程的堆栈
+
+## 98. gdb dashboard
+### 98.1 源码浏览 (无法 上下左右  浏览)
+dashboard source -output /dev/pts0  设置模块输出tty
+dashboard source -style context 10  设置上下文多少行
+
+### 98.2 一些常用的
+dashboard source -style context 20
+dashboard stack  -style limit 10
+dashboard stack  -style locals True / False
+### 98.3 高阶watch
+dashboard expressions watch expression
+dashboard expressions unwatch num
+dashboard expressions clear
+
+### 其他彩色 gdb 比较
++ gdbtui 分屏显示 asm/src/cmd/reg 但是没有语法高亮
+  + focus cmd/src/reg/asm 控制窗口焦点
+  + 方向键 浏览 src/asm
++ cgdb 分屏显示 src 有语法高亮  但无分屏asm
+  + (无法和tmux共用) 
+  + Exc 进入浏览源码vim模式
+  + i   进入gdb命令模式
+
+xxgdb  把b命令button化而已
+神器 https://github.com/cyrus-and/gdb-dashboard
+

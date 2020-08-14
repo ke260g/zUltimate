@@ -29,5 +29,9 @@ ioctl 设置网卡; fd 都是随便的 socket() 即可; 然后 ifr_name 作为�
 /proc/net/dev 网卡列表一览
 /sys/class/net/$interface 通过 access 判定网卡是否存在
 
-https://0xax.gitbooks.io/linux-insides/content/Concepts/linux-cpu-1.html 另一个内核学习网站
-https://blog.csdn.net/ustc_dylan/article/details/4049647                 RCU 解读网站1
+https://0xax.gitbooks.io/linux-insides/content/Concepts/linux-cpu-1.html 另一个内核学习网站 (目录结构不错)
+https://github.com/0xAX/linux-insides/blob/master/SUMMARY.md             0xAX 配套markdown
+
+https://lwn.net/Articles/262464/                                         RCU indros Part1
+
+关于内核同步; 还是不懂什么是内存屏障; 为啥 kfifo / seqlock 调用 smp_wmb smp_rmb 就可以解决同步问题

@@ -1,7 +1,4 @@
-
-
-
-
+[TOC]
 # 1. schedule
 ```c++
 extern signed long schedule_timeout(signed long timeout);
@@ -16,7 +13,6 @@ extern void schedule_preempt_disabled(void);
 ```c++
 wait_event_timeout();
 ```
-
 
 # 2. timer
 SMP 架构中; 同一个timer尽量让同一个CPU运行; 以有效利用 L2Cache

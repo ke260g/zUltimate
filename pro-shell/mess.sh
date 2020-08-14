@@ -203,3 +203,6 @@ find . -type f -name "*.log" | while read src; do mv $src $(echo $src | sed "s|\
 
 # ping add timestamp
 ping 115.239.211.112 | awk '{ print $0"\t" strftime("%Y-%m-%d %H:%M:%S",systime())}' 
+
+# 获取 thread 的名字; thread 的name 通过 prctl() 设置
+ls /proc/$(pidof a.out)/task -1 | while read tid; do cat /proc/$tid/status| grep Name: | awk '{print $2}'; done
