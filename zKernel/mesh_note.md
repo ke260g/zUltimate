@@ -34,4 +34,4 @@ https://github.com/0xAX/linux-insides/blob/master/SUMMARY.md             0xAX �
 
 https://lwn.net/Articles/262464/                                         RCU indros Part1
 
-关于内核同步; 还是不懂什么是内存屏障; 为啥 kfifo / seqlock 调用 smp_wmb smp_rmb 就可以解决同步问题
+关于内核同步; 

@@ -23,3 +23,10 @@ gcc -v -Wl,--verbose
 2 反编译带符号的elf文件 objdump -DS <elf> > elf.S
 3 elf.S 中找到 offset
 4 addr2line -a offset -e <efl>
+
+# so 构造
+
+
+# 导出所有符号表
+
+# https://blog.csdn.net/mw_nice/article/details/108253409?utm_medium=distribute.pc_relevant_bbs_down.none-task--2~all~first_rank_v2~rank_v25-1.nonecase&depth_1-utm_source=distribute.pc_relevant_bbs_down.none-task--2~all~first_rank_v2~rank_v25-1.nonecase
