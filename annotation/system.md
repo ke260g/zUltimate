@@ -46,3 +46,7 @@
 ## Q: vfork 做了啥
 
 ## Q: clone 做了啥
+
+## Q: malloc 做了啥
+
+## Q: 内核内存伙伴算法; 内存分配; slabinfo
