@@ -127,7 +127,7 @@ if (obj->ready) {
 // 问题2.2: cpu-b) 还有一个问题;  data / ready 从内存中读取上的 cache 中的顺序是 不确定的
 //          也就是说; 即使保证 `if (obj-ready)` 先于 `do_task(obj-data)` 的时序,
 //                   不能保证 `obj->ready 在 cpu-b) 中的
-//          当然这个问题只会发生于并行 cache 的架构, 如 alpha
+//          当然这个问题只会发生于并行 cache 的架构, 如 alpha; 用 smp_* 解决
 //          实际上, 某些架构的 smp_wmb/smp_rmb/smp_mb 是等同于无 smp_* 接口的
 // 问题2.3: cpu-a) 和 cpu-b) 如果是纯软件访问时; 需要保证 b) 比 a) 后; 即加锁同步
 //          当然, 软件访问时, 单个cpu-中的 data ready 不需要保证时序性
@@ -135,6 +135,18 @@ if (obj->ready) {
 //          但是, 用户态没有内存屏障, 所以用户态必须加锁.
 
 // 后记: (联系 kfifo的 in/out 实现逻辑; 感觉说不大通, 为啥只有 smp_wmb 而没有 smp_rmb)
+
+// 场景3:
+/// cpu-a)            
+init(newval); // 写操作
+wmb();
+data = &newval;
+// cpu-b)
+p = data;
+read_barrier_depends();
+val = *p;
+
+这里的屏障就可以保证：如果data指向了newval，那么newval一定是初始化过的。
 ```
 
 
