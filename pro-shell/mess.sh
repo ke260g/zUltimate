@@ -213,3 +213,9 @@ printf %d 0xabcdef    # hex to oct (suggested)
 echo $((16#abcdef))   # hex to oct
 printf %x 15          # oct to hex (suggested)
 echo "obase=16;15"|bc # oct to hex
+
+# 文件合并
+dd if=i.img of=o.img oflag=append conv=notrunc
+
+# 构造指定大小的空白文件; 如 1024 bytes
+truncate -s 1024 file.txt
