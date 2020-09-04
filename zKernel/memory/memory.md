@@ -28,6 +28,5 @@ There is something going to be wrong(like out-of-big-page), when Cached goes dow
 5. /proc/buddyinfo 越往右, page-size 越大;
 page-size: 1、2、4、8、16、32、64、128、256、512、1024
 
-
-
-
+内核内存合并选项
+CONFIG_COMPACTION=y
