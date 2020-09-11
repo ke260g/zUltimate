@@ -45,3 +45,7 @@ inetdevice.h
 
 
 协议栈 qdisc gso
+
+http://www.brendangregg.com/linuxperf.html
+
+/proc/loadavg 了解一下

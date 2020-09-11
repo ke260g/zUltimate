@@ -1,7 +1,7 @@
 [TOC]
 # barrier 内存屏障
 https://www.cnblogs.com/wuqi/articles/4475363.html  简单的介绍
-http://ifeve.com/linux-memory-barriers              丰富的例子
+http://ifeve.com/linux-memory-barriers              丰富的例子(一定要看懂这个)
 Documentation/memory-barriers.txt                   蠢萌的官方
 
 
