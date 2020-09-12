@@ -51,7 +51,7 @@ static int ip_rcv_finish(struct sk_buff *skb)
     // early_demux ...
 
     // ip_route_input_noref
-    // 查路由表, 处理多播逻辑, 赋值skb->_skb_refdst->input
+    // 查路由表, 处理多播逻辑, 检查已赋值的 skb->_skb_refdst->input <- 在哪里赋值的??
 	if (!skb_dst(skb)) {
 		err = ip_route_input_noref(skb, iph->daddr, iph->saddr,
 					   iph->tos, skb->dev);

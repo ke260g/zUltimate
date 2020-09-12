@@ -37,8 +37,7 @@ git config --global user.email  ""
 git config --global user.name   ""
 git config --global credential.helper store
 git config --global credential.helper 'cache --timeout=3600'
-# clear password
-git config --global --unset credential.helper
+git config --global --unset credential.helper # clear password
 
 # using git as clond note
 git add -A && git commit --allow-empty-message -m "" && git push --force
@@ -46,3 +45,13 @@ git add -A && git commit --allow-empty-message -m "" && git push --force
 # init
 git init && git add -A && git commit -m "" --allow-empty-message
 git remote add origin $url && git push -u origin master
+
+# win7 ignore mode difference
+git config --global --add core.filemode false
+
+# proxy setting
+git config --global http.proxy # show
+git config --global http.proxy 'socks5://127.0.0.1:1080'   # set https
+git config --global https.proxy 'socks5://127.0.0.1:1080'  # set https
+git config --global --unset http.proxy   # disable
+git config --global --unset https.proxy  # disable

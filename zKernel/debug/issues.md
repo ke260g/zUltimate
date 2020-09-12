@@ -6,7 +6,11 @@
 5. grep 一下模块里面是不是真的有
 
 mount -t debugfs nodev /sys/kernel/debug/
+mount -t proc none /proc/
 
 运行时内核函数地址 https://blog.csdn.net/gatieme/article/details/78310036
+
+
+
 
 

@@ -206,3 +206,16 @@ ping 115.239.211.112 | awk '{ print $0"\t" strftime("%Y-%m-%d %H:%M:%S",systime(
 
 # 获取 thread 的名字; thread 的name 通过 prctl() 设置
 ls /proc/$(pidof a.out)/task -1 | while read tid; do cat /proc/$tid/status| grep Name: | awk '{print $2}'; done
+
+
+# 16 进制
+printf %d 0xabcdef    # hex to oct (suggested)
+echo $((16#abcdef))   # hex to oct
+printf %x 15          # oct to hex (suggested)
+echo "obase=16;15"|bc # oct to hex
+
+# 文件合并
+dd if=i.img of=o.img oflag=append conv=notrunc
+
+# 构造指定大小的空白文件; 如 1024 bytes
+truncate -s 1024 file.txt
