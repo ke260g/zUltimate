@@ -24,7 +24,6 @@
 5. Stack 栈内存; 往低地址增长 (`%esp 指针`)
     + Stack 和 Kernel 不是直接相邻的; stack-offset 
 6. Kernal Space: 可在编译时调整; 默认是1G
-   
 
 ## Q: 内存溢出　内存泄漏　内存越界的区别? 什么是野指针
 1. 内存泄漏: memory-leak; 程序申请内存后; 无法释放已经申请的内存空间
