@@ -12,3 +12,4 @@ nano input.cue
 # step_4: split flac/wav from cue
 shntool split -t "%t.%p" -o flac -d out_dir -f input.cue input.flac
 ### -t "%p" format the filename of the output *.flac
+### -t "%t" is recomanded

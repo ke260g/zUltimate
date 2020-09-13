@@ -2,6 +2,16 @@
 [TOC]
 http://www2.rdrop.com/users/paulmck/rclock/ // 文档资源
 
+
+# 9 RCU (Read-Copy-Update) (arch相关) (高性能锁)
+http://www2.rdrop.com/users/paulmck/rclock/
+1. 使用场景: 读多, 写非常非常少的场景
+2. 写的流程:
+    1. 先复制
+    2. 写完之后等待所有读释放
+    3. 把新的对象替换原有对象 
+    4. 释放原有对象的资源
+
 RCU 的优势:
 1. 互斥锁, 仅允许单一线程访问数据
 2. 读写锁, 当存在读线程时, 写线程会阻塞; 当存在写线程时, 读线程会阻塞. (已经优于 互斥锁)
@@ -110,3 +120,56 @@ static inline void __list_del_entry(struct list_head *entry)
 # 更多背景
 ## ABA问题 及其本质
 ## COW (Copy-On-Write) 对比
+
+
+
+## 9.3 例子
+### 9.3.1 rcu多读单写
+```c++
+void get() {
+    rcu_read_lock();
+    list_for_each_entry_rcu() {
+        if (found) _entry = entry;
+    }
+    rcu_read_unlock();
+    return _entry;
+}
+void set() {
+    list_add_rcu();
+}
+```
++ 这个场景比较特殊: 对象尺度是固定有限, 且全生命周期不销毁;
+
+### 9.3.2 rcu多读多写
+```c++
+void get() {
+    rcu_read_lock();
+    list_for_each_entry_rcu() {
+        if (found) _entry = entry;
+    }
+    rcu_read_unlock();
+    return _entry;
+}
+
+void add() {
+    spin_lock();
+    list_for_each_entry() {
+
+    }
+    if (!found) list_add_rcu();
+    spin_unlock();
+}
+
+void del() {
+    spin_lock();
+    list_for_each_entry() {
+        if (found) {
+            _entry = entry;
+            list_del_rcu();
+        }
+        synchronize_rcu();
+        free(_entry)
+    }
+    spin_unlock();
+}
+```

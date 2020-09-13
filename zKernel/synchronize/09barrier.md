@@ -4,49 +4,28 @@ https://www.cnblogs.com/wuqi/articles/4475363.html  简单的介绍
 http://ifeve.com/linux-memory-barriers              丰富的例子(一定要看懂这个)
 Documentation/memory-barriers.txt                   蠢萌的官方
 
+## 问题根源
+cpu 流水线乱序 > 编译器 优化指令重排 > 硬件io问题 > SMP问题(两种 竞争 和 cache乱序)
 
-问题根源: cpu 流水线乱序 > 编译器 优化指令重排 > 硬件io问题 > SMP问题(两种 竞争 和 cache乱序)
-解决方法: 4种屏障 = { 读屏障; 写屏障; 通用屏障; 数据依赖 }
+## 解决方法: 内存屏障 x 5
+1. rmb 读屏障:   用于限制读操作 屏障之前的读操作一定会先于屏障之后的读操作完成，写操作不受影响，同属于屏障的某一侧的读操作也不受影响。
+2. wmb 写屏障:   用于限制写操作
+3.  mb 通用屏障: 不区分读写
+4. smp_read_barrier_depends(): 如果屏障后的读操作以来屏障前的; 则保证屏障前的 cache读取先于屏障后的.
+    + 仅仅作用于 cache; 与 memory  无关
+    + 只有 并行 cache 的cpu 架构才这种问题
+5. barrier 优化屏障: 限制编译器优化导致的指令重排
 
 
-
-## 先从 { x86 和 arm } 的 { smp_rmb smp_wmb smp_wb read_barrier_depends }  分析
+# x86 内存屏障
+## barrier 优化屏障 gcc
 ```c++
 // include/linux/compiler-gcc.h
 #define barrier() __asm__ __volatile__("": : :"memory")
 ```
 
-###  arm
+## 单核方法
 ```c++
-// arch/arm
-#ifndef CONFIG_SMP
-#define smp_mb()	barrier()
-#define smp_rmb()	barrier()
-#define smp_wmb()	barrier()
-#else
-#define smp_mb()	dmb(ish)
-#define smp_rmb()	smp_mb()
-#define smp_wmb()	dmb(ishst)
-#endif
-```
-
-### // arch/x86
-```c++
-#ifdef CONFIG_SMP
-#define smp_mb()	mb()
-#ifdef CONFIG_X86_PPRO_FENCE
-# define smp_rmb()	rmb()
-#else
-# define smp_rmb()	barrier()
-#endif
-#define smp_wmb()	barrier()
-
-#else /* !SMP */
-#define smp_mb()	barrier()
-#define smp_rmb()	barrier()
-#define smp_wmb()	barrier()
-#endif /* SMP */
-
 #ifdef CONFIG_X86_32
 #define mb() alternative("lock; addl $0,0(%%esp)", "mfence", X86_FEATURE_XMM2)
 #define rmb() alternative("lock; addl $0,0(%%esp)", "lfence", X86_FEATURE_XMM2)
@@ -55,23 +34,36 @@ Documentation/memory-barriers.txt                   蠢萌的官方
 #define mb() 	asm volatile("mfence":::"memory")
 #define rmb()	asm volatile("lfence":::"memory")
 #define wmb()	asm volatile("sfence" ::: "memory")
-#endif
-
-
+#define read_barrier_depends()	do { } while (0)
 ```
 
-内存屏障的实现 默认交由编译器 `barrier(); ` 调用汇编函数 ?memory?
+## smp 方法
+```c++
+#ifdef CONFIG_SMP
+#define smp_mb()	mb()
+#define smp_wmb()	barrier()
+#define smp_read_barrier_depends()	read_barrier_depends() // x86 没有平行cache
 
-单核cpu中; 内存屏障统一使用编译器的 `barrier()`
-x86 和 arm 分别针对 r/w 屏障有各自的优化?
-内存屏障有 6个方法  mb() rmb() wmb() smp_mb() smp_rmb() smp_wmb()
+#ifdef CONFIG_X86_PPRO_FENCE
+# define smp_rmb()	rmb()
+#else
+# define smp_rmb()	barrier()
+#endif
 
+#else /* !SMP */
 
-barrier 解决的问题: 单处理器下的CPU流水线导致的乱序问题  编译器重排
-                    多处理器下的内存同步等问题。
+#define smp_mb()	barrier()
+#define smp_rmb()	barrier()
+#define smp_wmb()	barrier()
+#define smp_read_barrier_depends()	do { } while (0) // x86 没有并行cache
 
+#endif /* SMP */
+```
+1. 这些方法用于仅仅避免多核时序问题 （代码逻辑 保证单核没问题)
+2. 但在单核CPU 中; 不存在多核竞争; 
+3. 所以只需要优化屏障 barrier 即可
 
-## 问题根源
+# 问题根源
 1. CPU 流水线导致的指令乱序             (硬件保证 保证上下文因果关系)
 2. 编译器针对CPU 的流水线进行指令重排    (软件保证 保证上下文因果关系)
 ```c++
@@ -146,13 +138,10 @@ p = data;
 read_barrier_depends();
 val = *p;
 
-这里的屏障就可以保证：如果data指向了newval，那么newval一定是初始化过的。
+// 场景3:
+// cpu-b 实际上只于 cpu-a) 共享一个数据 data
+// cpu-b 不存在硬件读写时序 的问题
+// 实际上; cpu-b 需要保证的是 data 是经过初始化的;
+// 所以;   只需要 read_barrier_depends 保证 cache 的更新时序即可
 ```
 
-
-
-内存屏障主要有：读屏障、写屏障、通用屏障、优化屏障、几种。
-
-读屏障: 用于限制读操作 屏障之前的读操作一定会先于屏障之后的读操作完成，写操作不受影响，同属于屏障的某一侧的读操作也不受影响。
-写屏障: 用于限制写操作 而通用屏障则对读写操作都有作用。
-而优化屏障则用于限制编译器的指令重排，不区分读写。
