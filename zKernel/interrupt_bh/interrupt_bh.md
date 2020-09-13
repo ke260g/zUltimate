@@ -1,6 +1,38 @@
 [TOC]
 中断下半部本质上有5种方式处理: sortirqs, tasklet, workqueue, timer(这里不讨论; 放到时间相关讨论), 内核线程(这里不讨论)
 
+[TOC]
+## 中断的本身限制 (下半部分 的 产生背景)
+中断下半部分的软中断 跟系统调用的软中断时不一样的!!!
+系统调用的软中断      = 进程上下文
+中断下半部分的软中断  = 软中断上下文 ( NR_CPUS 个 ksoftirqd 内核线程 )
+
+## softirq / tasklet / workqueue
+1. 先有软中断 percpu 实现多cpu 并发;
+    1. 需要额外逻辑保证序列化; (因为 percpu 并行)
+2. 再有 tasklet；一种禁止多cpu 并发的软中断子任务;
+    1. 自带序列化保证
+3. 最后 workqueue 由kworker 内核线程 运行在进程上下文中的可休眠任务
+    1. 可休眠的代价是 开销大; 因为需要内核线程切换 以及 进程上下文切换
+    2. 遇到频繁产生的中断(如 网卡); workqueue 并不合适
+    3. 需要额外逻辑保证序列化；(因为 内核线程 并发)
+
+## 中断下半部分的使能 (local_bh_disable / local_bh_enable)
+1. 仅使能当前 cpu 的 (percpu 变量)
+static __always_inline void (int val)
+2. local_bh_disable
+    + `&current_thread_info()->preempt_count += SOFTIRQ_DISABLE_OFFSET`;
+3. local_bh_enable
+    1. `&current_thread_info()->preempt_count -= SOFTIRQ_DISABLE_OFFSET - 1` 避免重复执行
+    2. do_softirq(); 
+    3. `&current_thread_info()->preempt_count -= 1` 恢复为0
+
+
+
+
+
+
+
 # 3. Tasklets
 + 一些特性
     1. 运行在中断上下文中
