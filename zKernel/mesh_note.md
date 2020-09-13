@@ -30,12 +30,24 @@ ioctl 设置网卡; fd 都是随便的 socket() 即可; 然后 ifr_name 作为�
 /sys/class/net/$interface 通过 access 判定网卡是否存在
 
 https://0xax.gitbooks.io/linux-insides/content/Concepts/linux-cpu-1.html 另一个内核学习网站 (目录结构不错)
-https://github.com/0xAX/linux-insides/blob/master/SUMMARY.md             0xAX 配套markdown
+https://github.com/0xAX/linux-insides/blob/master/SUMMARY.md 0xAX 配套markdown
 
-https://lwn.net/Articles/262464/                                         RCU indros Part1
-
-关于内核同步; 
+https://lwn.net/Articles/262464/ RCU indros Part1
 
 dev_queue_xmit 必须在软中断中调用
 因为 dev_queue_xmit > __dev_queue_xmit > rcu_read_lock_bh 
 rcu_read_lock_bh 这个函数如果在硬中断中使用; 会有问题的, 具体啥问题待研究
+
+## LKD3 的后续计划
+next plan:
+chapter 11 time 
+chapter 12 memory
+
+优先级低:
+chapter 13: vfs
+chapter 14: block i/o
+chapter 16: page cache
+chapter 17: device and module
+
+不看:
+chapter 18 ~ chapter 20: bullish

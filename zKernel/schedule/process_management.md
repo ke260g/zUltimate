@@ -85,14 +85,13 @@ lsit_for_each(list, &current->children) {
 2. 父进程vfork() 后阻塞; 直到子进程 `exit()` or `exec()`
 #### vfork 实现详解
 1. vfork 系统调用 传参`CLONE_VFORK` 给 do_fork()
-2. `copy_process()` 中 `task_struct->vfork_done = NULL` 初始化
-3. `do_fork()` 在 `copy_process()` 后；通过 `struct completion` 实现阻塞
+2. 父进程 `copy_process()` 初始化子进程的 completion 对象 `task_struct->vfork_done = NULL`
+3. 父进程 `do_fork()` 在 `copy_process()` 后；通过等待 `struct completion` 实现阻塞
+4. 子进程 `mm_release()` 在进程退出时 `complete_vfork_done(tsk)` 解除父进程的阻塞
 ```c++
 do_fork() { // 父进程软中断
     copy_process();
     struct completion vfork; p->vfork_done = &vfork; init_completion(&vfork); // 加锁
-    get_task_struct(p);      // 使父进程不被调度
-
     wake_up_new_task(p);     // 唤醒: 子进程
     wait_for_vfork_done(p, &vfork); // 阻塞 (wait_for_completion_killable(vfork))
     put_pid(pid);            // 使父进程重新调度
