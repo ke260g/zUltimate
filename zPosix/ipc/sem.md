@@ -110,3 +110,19 @@ unlink("/dev/shm/sem_ctx")          = 0
 3. 先用创建随机文件名shm_fd, 进行mmap, 然后把shm作为 信号量的本质底层句柄; 存放 信号量值
 4. 准备好信号量句柄后; link 再 unlink
 ```
+
+# 实现
+```c++
+sem_wait(sem_t *sem) {
+while (true) {
+   if (atomic_decrement_if_positive(sem->count))
+       break;
+   futex(&sem->count, FUTEX_WAIT, 0, ...);
+}
+
+sem_post(sem_t *sem) {
+   n = atomic_increment(sem->count);
+   // Pass the new value of sem->count
+   futex(&sem->count, FUTEX_WAKE, n+1);
+}
+```
