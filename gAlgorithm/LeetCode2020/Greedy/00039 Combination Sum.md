@@ -4,8 +4,6 @@ Combination Sum
 2. 找出 candidates 中所有可以使数字和为 target 的组合。
 3. candidates 中的数字可以无限制重复被选取。
 
-
-
 我的思路:
 1. 排序; 降序
 2. 数值 v[i] 
@@ -17,7 +15,6 @@ Combination Sum
         递归无法得到 vector_remain；说明数值无法构造 target
     5. 
 + 一定是先有 2. 再有 3.
-
 
 他的思路:
 1. remain 作为树的节点 进行深度搜索(递归)
