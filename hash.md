@@ -1,8 +1,11 @@
 [TOC]
-
-
+hash 扩容的过程
+hash 用链表解决冲突时; 还是冲突怎么办
+hash 如何扩容
 ## 哈希字符串
 https://oi-wiki.org/string/hash/
+https://cp-algorithms.com/string/string-hashing.html
+https://byvoid.com/zht/blog/string-hash-compare/
 1. 把字符串映射到整数
 2. 映射后方便判断两字符串是否相等
     1. 即 hash值 不一样时 字符串一定不相同
