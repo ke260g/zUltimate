@@ -1,12 +1,12 @@
-### TCP 可靠连接
+# TCP 可靠连接
 + 三次握手
-+ 四次握手
++ 四次挥手
 + 自适应包大小 Nagle
 + 超时重传
 + 滑动窗口
 + 心跳包
 
-### TCP加速
+# TCP加速
 + Nagle算法 等待足够多数据一起发
     + TCP_NODELAY 关掉这个算法
 + 携带ACK 等一会把 下一帧要发送的数据连着上一个ack一起发
@@ -15,14 +15,14 @@
 + 超复杂定时器
     超时定时器 坚持定时器 2MSL定时器
 
-### 三次握手
+# 三次握手
 client: send SYN seq=J
 (client => ) (server => SYN_RCVD)
 server: send SYN ACK seq=K ack=J+1
 client: send ACK ack=K+1
 (client => ESTABLISHED) (server => ESTABLISHED)
 
-### 四次握手
+# 四次握手
 client: send FIN=M
 (client => FIN_WAIT_1) (server => CLOSE_WAIT)
 server: send ack=M+1
@@ -32,7 +32,7 @@ server: send FIN=N
 client: send FIN=N+1
 (client => TIME_WAIT) (server => CLOSED)
 
-### 超时重传 ( seq + ack )
+# 超时重传 ( seq + ack )
 + 三种情况 (正常 发送方的包未到达接收方 接收方的ack未到达发送方)
 + 发送方 针对长时间没收到ack的包 重发
 + 接收方 针对重复收到的已经发过ack的seq包 重新发ack
@@ -43,7 +43,7 @@ client: send FIN=N+1
 + 每一对seq + ack 称为一个segment
 + segment大小在三次握手时 确认
 
-### 滑动窗口
+# 滑动窗口
 + 显然一对一的 seq + ack 太慢了
 + 定义窗口 为N个segment 的大小
 + 一次性发送N个segment 等待N个ACK
@@ -51,7 +51,7 @@ client: send FIN=N+1
 + 发送端
   + 同一窗口中的segment 即使上一段没有收到ACK 也继续发
   + 窗口中**第**m个segment的ack收到后 即可把窗口 往后移m个segment
-  + 当**第**m个segment的ack收到后  即可无视 0 ~ m-1 个segment的ack是否收到 即使没收到也无需重发
+  + 当**第**m个segment的ack收到后; 当作 0 ~ m-1 个segment的ack收到; 即使没收到也无需重发
   + 避免因ack丢失 导致的冗余重发
   + 当**第**n个segment的ack重复收到 表明该segment的下一段 丢失了
 + 接受端 (移动窗口 + 发送首个非连续处segment的ack)
