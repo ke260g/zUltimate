@@ -1,5 +1,5 @@
 #include <vector>
-int sort_select(vector<int> a) {
+int sort_insert(vector<int> a) {
     for (int i = 1; i < a.size(); ++i) {
         int val = a[i];    // 1. 把改数值插入(左移)到合适的位置
         int j = i - 1;     // 2. j+1 指示 待插入数值的位置 

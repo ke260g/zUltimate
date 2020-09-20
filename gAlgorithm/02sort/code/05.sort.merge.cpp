@@ -47,12 +47,28 @@ int sort_merge(int *a, int len) {
 }
 
 // 递归法
+void __sort_merge(vector<int> &a, int begin, int mid, int end) {
+    vector<int> b(end - begin + 1, 0);
+    int i = begin, j = mid, k = 0;
+    while (begin < mid && j <= end) {
+        if (a[i] < a[j])
+            b[k++] = a[i++];
+        else
+            b[k++] = a[j++];
+    }
+    while (i < mid)
+        b[k++] = a[i++];
+    while (j <= end)
+        b[k++] = a[j++];
+    for (int x = 0, y = begin; x < b.size(); ++x, ++y)
+        a[y] = b[x];
+}
 
-void sort_merge_r(int *a, int begin, int end) {
+void sort_merge(vector<int> &a, int begin, int end) {
     if (begin >= end) // 1. 确定递归终止条件
         return;
     int mid = (begin + end ) / 2;
-    sort_merge_r(a, begin, mid);
-    sort_merge_r(a, mid + 1, end);
-    __merge(a, begin, mid, end);
+    sort_merge(a, begin, mid);
+    sort_merge(a, mid + 1, end);
+    __sort_merge(a, begin, mid, end);
 }
