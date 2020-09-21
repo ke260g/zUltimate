@@ -22,7 +22,7 @@ server: send SYN ACK seq=K ack=J+1
 client: send ACK ack=K+1
 (client => ESTABLISHED) (server => ESTABLISHED)
 
-# 四次握手
+# 2. 四次握手
 client: send FIN=M
 (client => FIN_WAIT_1) (server => CLOSE_WAIT)
 server: send ack=M+1
@@ -31,6 +31,31 @@ server: send FIN=N
 (server => LAST_ACK)
 client: send FIN=N+1
 (client => TIME_WAIT) (server => CLOSED)
+## 2.1 四次挥手 状态流1  (FIN - FIN - ACK - ACK) (两端同时close)
+```log
+发起端                    发起端
+close  @ ----- FIN -------> *
+       @ <---- FIN -------- * close
+       @ ----- ACK -------> *
+       @ <---- ACK -------- *
+```
+
+## 2.2 四次挥手 状态流2  (FIN - ACK - FIN - ACK)
+```log
+主动关闭             被动关闭
+close  @ ----- FIN -------> *
+       @ <---- ACK -------- * 这个是内核收到FIN后触发
+       @ <---- FIN -------- * 用户 close / shutdown 
+       @ ----- ACK -------> *
+```
+
+## 2.3 四次挥手 状态流3  (FIN - ACK&FIN - ACK)
+```log
+主动关闭             被动关闭
+close  @ ----- FIN -------> *
+       @ <---- ACK FIN----- * 用户 close / shutdown 回的
+       @ ----- ACK -------> *
+```
 
 # 超时重传 ( seq + ack )
 + 三种情况 (正常 发送方的包未到达接收方 接收方的ack未到达发送方)
