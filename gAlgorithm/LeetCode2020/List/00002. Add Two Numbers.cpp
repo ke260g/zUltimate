@@ -9,7 +9,7 @@
 class Solution {
 public:
     ListNode* __addTwoNumbers(ListNode* l1, ListNode *l2, int give_next) {
-        // 3个变量; 8种场景
+        // 3个变量(左右节点和是否进位); 8种场景
         // 1. 两链表为空; 进位为0; 返回空
         // 2. 两链表为空; 进位为1; 返回新节点 val = 1
         // 3. 左链表为空; 右链表不空; 进位为0; 返回右边链表
