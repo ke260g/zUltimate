@@ -1,7 +1,7 @@
 
 [TOC]
 http://www2.rdrop.com/users/paulmck/rclock/ // 文档资源
-
+http://www2.rdrop.com/users/paulmck/RCU/RCU.2018.11.21c.PSU-full.pdf
 
 # 9 RCU (Read-Copy-Update) (arch相关) (高性能锁)
 http://www2.rdrop.com/users/paulmck/rclock/

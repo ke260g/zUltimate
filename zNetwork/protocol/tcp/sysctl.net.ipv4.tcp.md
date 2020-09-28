@@ -5,17 +5,12 @@ Documentation/networking/ip-sysctl.txt 内核官方的解析
 区分 tcp_orphan_retries tcp_retries1 tcp_retries2 tcp_synack_retries tcp_syn_retries
 
 # tcp 参数应用
-## Q: 大量 TIME-WAIT
-```sh
-echo 1  > /proc/sys/net/ipv4/tcp_tw_reuse    # 默认 0; TIME-WAIT socket 的fd可以被重复利用
-echo 1  > /proc/sys/net/ipv4/tcp_tw_recycle  # 默认 0; TIME-WAIT socket 快速回收(默认是2MSL)
-echo 30 > /proc/sys/net/ipv4/tcp_fin_timeout # 默认60; 加快 FIN_WAIT_1 到 TIME_WAIT 的定时器
-```
-
 ## Q: 三次握手丢弃连接
 + 问题本身是 服务端处理三层握手不过来
 1. 上调服务端二次握手后, 等待客户端三次握手的队列
+    + /proc/sys/net/ipv4/tcp_max_syn_backlog 
 2. 上调服务端listen调用的缓存队列(已经完成连接, 但是没有accept的)
+    + /proc/sys/net/core/somaxconn
 2. 在 连接队列溢出时; 往客户端发 RST. (使得客户端感知)
     + 如果不发送; 客户端二次握手后处于ESTABLISHED状态; 要等48 hours触发keepavlive机制才会回收
     + 浪费客户端资源
@@ -119,6 +114,29 @@ tcp 发送 keepalive 心跳的时长; 默认2小时
 
 
 ## tcp_syncookies
+https://segmentfault.com/a/1190000019292140 原理
+https://blog.csdn.net/sinat_20184565/article/details/104828782 实现
+https://lwn.net/Articles/277146/ 设计
+1. 设计背景: 避免 or 减缓 syn-flood 半连接攻击
+2. 实现本质: 启用后; 第二次握手时不使用backlog 半连接队列
+    1. 减少 backlog 半连接队列的资源分配; 还是要分配的 不过只是一个整形
+    2. hash 客户端的报文 timestamp + 客户端MSS的低3bit + T(本地时间戳)
+3. 功能缺陷
+    1. 客户端的MSS有8bit; 这里只用了 3bit
+    2. 忽略的客户端其他字段 wscale / sack
+4. 参数
+    1. 数值0 表示始终不用
+    2. 数值1 表示连接压力较大时启用
+    3. 数值2 表示始终启用
+5. 实现
+```c++
+tcp_conn_request()
+    > cookie_init_sequence
+    > cookie_v4_init_sequence
+    > __cookie_v4_init_sequence
+    > secure_tcp_syn_cookie
+```
+
 ## tcp_thin_dupack
 ## tcp_thin_linear_timeouts
 ## tcp_timestamps
@@ -134,6 +152,8 @@ tcp 发送 keepalive 心跳的时长; 默认2小时
     1. 如果客户端是使用 NAT 防火墙与 服务器建立连接
     2. 那么 NAT防火墙的时间戳可能是客户端之前, 经过 NAT防火墙与服务器连接会被丢弃
 ## tcp_tw_reuse
+1. TIME_WAIT 的 sockets 可重新用于新的连接 (如果fd满了的情况下)
+
 ## tcp_window_scaling
 一般来说TCP/IP允许窗口尺寸达到65535字节。对于速度确实很高的网络而言这个值可能还是太小。这个选项允许设置上G字节的窗口大小，有利于在带宽*延迟很大的环境中使用。
 
@@ -149,3 +169,6 @@ tcp_retries1
 tcp_retries2
 tcp_synack_retries
 tcp_syn_retries
+
+
+
