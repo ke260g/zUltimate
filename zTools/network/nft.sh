@@ -21,5 +21,13 @@ nft add rule bridge filter forward meta iifname \"ext1\" meta oifname \"ge*\" ac
 nft add rule bridge filter forward meta iifname \"ge*\" meta oifname \"ext2\" accept
 nft add rule bridge filter forward meta iifname \"ext2\" meta oifname \"ge*\" accept
 
+# 使环路
+nft add rule bridge filter forward meta iifname \"ext*\" meta oifname \"ext*\" accept
+nft flush chain bridge filter forward
+
 # 删除 bridge->filter
 nft delete table bridge filter
+
+# 删除 规则
+nft delete rule [<family>] <table> <chain> [handle <handle>]
+nft delete rule inet filter forward  meta iifname \"ext2\" meta oifname \"ge*\" accept

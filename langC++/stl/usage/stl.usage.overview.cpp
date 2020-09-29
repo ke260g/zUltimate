@@ -141,3 +141,30 @@ bitset_usage() {
     // 直接设置
     bs[0] = bs[bs.size()-1]; // 最低位 = 最高位
 }
+
+
+
+priority_queue_usage() {
+    class comp {
+    public:
+        bool operator() (const int &l, const int &r) const {
+            return r < l /* 降序 */; 
+            // return l < r /* 升序 */;
+        }
+    };
+    int a[] = {10, 60, 50, 20};
+    // 默认是 vector 升序
+    priority_queue<int> pq(a, a+4);
+    // 升序
+    priority_queue<int, vector<int>, less<int>> pq_lt(a, a+4);
+    int min_val = pq_lt.top(); // 得到最小值
+    pq_lt.pop(); // 取出首元素, 升序即最小值
+    // 降序
+    priority_queue<int, vector<int>, greater<int>> pq_gt(a, a+4);
+    int max_val = pq_gt.top(); // 得到最大值
+    pq_gt.pop(); // 取出首元素, 降序即最大值
+
+    // 自实现比较函数; 主要是重定向 () 操作符
+    priority_queue<int, vector<int>, comp> pq_lt(a, a+4); // 升序
+    priority_queue<int, vector<int>, comp> pq_gt(a, a+4); // 降序
+}
