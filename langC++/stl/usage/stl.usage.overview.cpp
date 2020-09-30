@@ -1,3 +1,4 @@
+// vector
 vector_usage() {
     vec.clear(); // 删除所有成员; 保留分配的空间 vec.capacity()
     vec.shrink_to_fit(); // 不怎么用; 把capacity缩减到成员个数
@@ -13,6 +14,7 @@ vector_usage() {
     // vec 只有尾遍历 没有头遍历
 }
 
+// list
 list_usage() {
     list<int> l1;
     l1.clear(); // 删除所有成员; 保留分配的空间 vec.capacity()
@@ -57,6 +59,7 @@ list_usage() {
     }
 }
 
+// queue
 queue_usage() {
     queue<int> q;
 
@@ -68,6 +71,33 @@ queue_usage() {
     }
 }
 
+// priority_queue
+priority_queue_usage() {
+    class comp {
+    public:
+        bool operator() (const int &l, const int &r) const {
+            return r < l /* 降序 */; 
+            // return l < r /* 升序 */;
+        }
+    };
+    int a[] = {10, 60, 50, 20};
+    // 默认是 vector 升序
+    priority_queue<int> pq(a, a+4);
+    // 升序
+    priority_queue<int, vector<int>, less<int>> pq_lt(a, a+4);
+    int min_val = pq_lt.top(); // 得到最小值
+    pq_lt.pop(); // 取出首元素, 升序即最小值
+    // 降序
+    priority_queue<int, vector<int>, greater<int>> pq_gt(a, a+4);
+    int max_val = pq_gt.top(); // 得到最大值
+    pq_gt.pop(); // 取出首元素, 降序即最大值
+
+    // 自实现比较函数; 主要是重定向 () 操作符
+    priority_queue<int, vector<int>, comp> pq_lt(a, a+4); // 升序
+    priority_queue<int, vector<int>, comp> pq_gt(a, a+4); // 降序
+}
+
+// stack
 stack_usage() {
     stk<int> stk;
 
@@ -79,44 +109,8 @@ stack_usage() {
     }
 }
 
-set_usage() {
-    set<int> set;
-    set.insert(1); // 插入集合
 
-    // 查找第一个匹配的元素 并 删除
-    set<int>::iterator it = set.find(100);
-    do_on(*it);
-    set.erase(it);
-    // 删除指定一个指定元素
-    set.erase(set.find(1000));
-
-    set.count(100); // set 中100的个数；都是1
-}
-
-map_usage() {
-    map<string, int> m = {{ "Amy", 10 }, { "Sarah", 20 }};
-    pair<map<char, int>::iterator, bool> retval;
-
-    m.insert(pair<string, int>("John", 100));
-    m.insert(pair<string, int>("Mike", 200));
-    
-    retval = m.insert(pair<string, int>("Mike", 300)); 
-    if (!retval->second) { // 插入失败
-        printf("key = %s is already existed, with %d\n",
-            retval->first->first, retval->first->second);
-    }
-    m.erase('Mike'); // 根据 key 删除
-    
-    map<char, int>::it = m.find("John");
-    if (it != m.end()) { // 找不到会返回 m.end()
-        printf("find %s with %d\n", it->first, it->second);
-    }
-
-    // 访问 Q: [] 和 at 有什么不同?
-    m["John"] = 2000;
-    m.at("Mike") = 1000;
-}
-
+// bitset
 bitset_usage() {
     bitset<8> bs;            // 初始化为0
     bitset<8> bs(0xef);      // 用 数值初始化
@@ -142,29 +136,42 @@ bitset_usage() {
     bs[0] = bs[bs.size()-1]; // 最低位 = 最高位
 }
 
+// set
+set_usage() {
+    set<int> set;
+    set.insert(1); // 插入集合
 
+    // 查找第一个匹配的元素 并 删除
+    set<int>::iterator it = set.find(100);
+    do_on(*it);
+    set.erase(it);
+    // 删除指定一个指定元素
+    set.erase(set.find(1000));
 
-priority_queue_usage() {
-    class comp {
-    public:
-        bool operator() (const int &l, const int &r) const {
-            return r < l /* 降序 */; 
-            // return l < r /* 升序 */;
-        }
-    };
-    int a[] = {10, 60, 50, 20};
-    // 默认是 vector 升序
-    priority_queue<int> pq(a, a+4);
-    // 升序
-    priority_queue<int, vector<int>, less<int>> pq_lt(a, a+4);
-    int min_val = pq_lt.top(); // 得到最小值
-    pq_lt.pop(); // 取出首元素, 升序即最小值
-    // 降序
-    priority_queue<int, vector<int>, greater<int>> pq_gt(a, a+4);
-    int max_val = pq_gt.top(); // 得到最大值
-    pq_gt.pop(); // 取出首元素, 降序即最大值
+    set.count(100); // set 中100的个数；都是1
+}
 
-    // 自实现比较函数; 主要是重定向 () 操作符
-    priority_queue<int, vector<int>, comp> pq_lt(a, a+4); // 升序
-    priority_queue<int, vector<int>, comp> pq_gt(a, a+4); // 降序
+// map
+map_usage() {
+    map<string, int> m = {{ "Amy", 10 }, { "Sarah", 20 }};
+    pair<map<char, int>::iterator, bool> retval;
+
+    m.insert(pair<string, int>("John", 100));
+    m.insert(pair<string, int>("Mike", 200));
+    
+    retval = m.insert(pair<string, int>("Mike", 300)); 
+    if (!retval->second) { // 插入失败
+        printf("key = %s is already existed, with %d\n",
+            retval->first->first, retval->first->second);
+    }
+    m.erase('Mike'); // 根据 key 删除
+    
+    map<char, int>::it = m.find("John");
+    if (it != m.end()) { // 找不到会返回 m.end()
+        printf("find %s with %d\n", it->first, it->second);
+    }
+
+    // 访问 Q: [] 和 at 有什么不同?
+    m["John"] = 2000;
+    m.at("Mike") = 1000;
 }

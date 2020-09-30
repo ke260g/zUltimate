@@ -134,6 +134,11 @@ thread apply $threadId1 $threadId2 continue # 批量 继续执行制定线程
 1. `gdb -p $(pidof process_name)`
 2. `(gdb) symbol-file $/path/to/process/symbol`
 3. `(gdb) debug-file-directory $/path/to/debug_symbol_rootfs`
+## Q: 查core; 索引所有的堆栈
+1. `gdb`
+2. `(gdb) file $/path/to/exec-symbol`
+3. `(gdb) debug-file-directory $/path/to/debug_symbol_rootfs`
+4. `(gdb) core-file $/path/to/core-symbol`
 ## Q: 多线程调试
 1. `(gdb) thread apply all bt` 打印所有线程的堆栈
   + `ls -1 /proc/$pid/task/`   获取线程的PID
