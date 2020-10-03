@@ -4,6 +4,11 @@
 class Solution {
 public:
     int climbStairs(int n) {
+        // f(k) 表示走当前阶的走法
+        // 要么 f(k-2) 上上阶再走一步
+        // 要么 f(k-1) 　上阶再走两步
+        // 所以 f(k) = f(k-2) + f(k-1) 
+
         if (n <= 0)
             return 0;
         if (n == 1)

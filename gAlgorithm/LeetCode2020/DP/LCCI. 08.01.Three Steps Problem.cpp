@@ -1,6 +1,12 @@
 class Solution {
 public:
     int waysToStep(int n) {
+        // f(k) 表示走当前阶的走法
+        // 要么 f(k-3) 上上上阶再走一步        
+        // 要么 f(k-2)   上上阶再走一步
+        // 要么 f(k-1) 　  上阶再走两步
+        // 所以 f(k) = f(k-2) + f(k-1) + f(k-3) 
+
         const int module = 1000000007;
         if (n < 0) return 0;
         if (n <= 2) return n;
@@ -11,7 +17,7 @@ public:
         // 4: 7
         // 5: 13
         // return waysToStep(n-1) + waysToStep(n-2) + waysToStep(n-3);
-        // 斐波那数列
+        // 斐波那契数列的变种
         int res = 0; int curr_step = 4;
         int prev[3] = { 1, 2, 4 }; // 斐波那窗口
         while(curr_step <= n) {
