@@ -11,7 +11,7 @@ class Solution {
 public:
     int maxProfit(vector<int>& prices) {
         // 对于每一天
-        // 1. 如果卖出; 利润是否更大 
+        // 1. 如果今天卖出; 利润是否更大 
         // 2. 如果今天价格 之前 买入的价格更低; 那就今天买入
         if (prices.empty()) return 0;
         int profit = 0;
