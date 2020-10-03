@@ -37,9 +37,8 @@ public:
         rob_val[0] = nums[0];
         rob_val[1] = nums[1];
         rob_val[2] = nums[0] + nums[2];
-        for(int i = 3; i < nums.size(); ++i) {
+        for(int i = 3; i < nums.size(); ++i)
             rob_val[i] = max(rob_val[i-3], rob_val[i-2]) + nums[i];
-        }
         return max(rob_val[nums.size()-1], rob_val[nums.size()-2]);
     }
 };
