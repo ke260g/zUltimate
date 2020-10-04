@@ -27,11 +27,8 @@ public:
 
         // 步骤3 找相遇点
         ListNode *fast = headB, *slow = headB;
-        while (fast) {
-            fast = fast->next;
-            // if (!fast) // 一定有环; 不用判断
-            //     return NULL;
-            fast = fast->next;
+        while (fast && fast->next) {
+            fast = fast->next->next;
             slow = slow->next;
             if (fast == slow)
                 break;

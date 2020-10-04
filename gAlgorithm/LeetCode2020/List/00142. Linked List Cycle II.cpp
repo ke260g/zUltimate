@@ -19,12 +19,9 @@ public:
     // 7. 无法相遇则无环
     ListNode *detectCycle(ListNode *head) {
         ListNode *fast = head, *slow = head;
-        while(fast) {
+        while(fast && fast->next) {
             slow = slow->next;
-            fast = fast->next;
-            if (!fast)
-                return NULL; // 无环
-            fast = fast->next;
+            fast = fast->next->next;
             if (fast == slow)
                 break;       // 首次相遇点
         }
