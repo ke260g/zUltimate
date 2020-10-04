@@ -11,26 +11,12 @@
  */
 class Solution {
 public:
-    bool result = true;
     bool isSameTree(TreeNode* p, TreeNode* q) {
-        // 前序遍历法
-        // 1. 两个空节点是相同,
-        // 2. 只有一个是空节点 不相同
-        // 3. 先判断左子树, 是否相同
-        // 4. 再判断右子树, 是否相同
-        // 5. 最后判断当前节点是否相同
-        // 6. 优化; 全局结果; 提前退出递归
-        if (!result) return false;
+        // 两个空树相同
+        // 只有一棵非空 表示不同
+        // 树的根节点相等 && 左右子树分别相同
         if (!p && !q) return true;
         if (!p || !q) return false;
-        if (!isSameTree(p->left, q->left)) {
-            result = false;
-            return false;
-        }
-        if (!isSameTree(p->right, q->right)) {
-            result = false;
-            return false;
-        }
-        return p->val == q->val;
+        return p->val == q->val && isSameTree(p->left, q->left) && isSameTree(p->right, q->right);
     }
 };

@@ -1,50 +1,7 @@
-
-
-/**
- * Definition for a binary tree node.
- * struct TreeNode {
- *     int val;
- *     TreeNode *left;
- *     TreeNode *right;
- *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
- * };
- */
-class Solution {
-public:
-    bool result = true;
-    int calc_tree_depth(TreeNode *root) {
-        if (!result) return result; // 提前结束递归 (超级关键；递归算法的提前结束机制)
-        // 1. 空树是平衡的
-        // 2. 先判断左子树
-        // 3. 再判断右子树
-        // 4. 根据高度差判断
-        // +  递归返回高度差
-        // 1. 空树是平衡的
-        if (!root)
-            return 0;
-        int left_depth = 0, right_depth = 0;
-        // 2. 先判断左子树
-        left_depth = calc_tree_depth(root->left);
-        if (!result) return false;
-
-        // 3. 再判断右子树
-        right_depth = calc_tree_depth(root->right);
-        if (!result) return false;
-
-        // 4. 根据高度差判断
-        int delta_depth = left_depth - right_depth;
-        if (abs(left_depth - right_depth) > 1) {
-            result = false;
-            return false;
-        }
-        // +  递归返回高度差
-        return max(left_depth, right_depth) + 1;
-    }
-    bool isBalanced(TreeNode* root) {
-        calc_tree_depth(root);
-        return result;
-    }
-};
+// 平衡二叉树的定义: (3个条件缺1不可)
+// 1. 左子树是平衡树
+// 2. 右子树是平衡树
+// 3. 左右子树的高度差小于1
 
 // version1: 本质是前序遍历; 效率低, 这样子的复杂度是 O(n!), 遍历子树时重复计算了
 class Solution {
