@@ -10,17 +10,20 @@
  */
 
 // 快慢指针;
-// 如果是 A B;       使得慢指针指向A 为中间节点
+// 如果是 A B;       使得慢指针指向B 为中间节点
 // 如果是 A B C;     使得慢指针指向B 为中间节点
-// 如果是 A B C D；  使得慢指针指向B
+// 如果是 A B C D；  使得慢指针指向C
+//   A->B->C->nullptr
+//   D->C---->nullptr
 // 如果是 A B C D E; 使得慢指针指向C
+//   A->B->C->nullptr
+//   E->D->C->nullptr
 class Solution {
 public:
     bool isPalindrome(ListNode* head) {
         // 1. 通过快慢指针找到中间节点
-        // 2. 链表从中间节点断开
-        // 3. 反转后半链表
-        // 4. 遍历已翻转的后半链表 和 从中间断开的前半链表 判断是否对称
+        // 2. 反转后半链表 slow 作为新的尾部
+        // 3. 遍历已翻转的后半链表 和 从中间断开的前半链表 判断是否对称
 
         // 1.
         if (!head) return true;
@@ -32,19 +35,15 @@ public:
             slow = slow->next;
         }
         
-        // slow 后方就是另一半链表; 把他们反转
+        // slow 后方(包括slow)就是另一半链表; 把他们反转
         ListNode *prev = head;
         ListNode *post = nullptr;
-        ListNode *iter = slow->next; // 遍历后半节点
-
-        // 2.
-        slow->next = nullptr; // 断开
         // 3
-        while (iter) { // 反转链表
-            ListNode *next = iter->next;
-            iter->next = post;
-            post = iter;
-            iter = next;
+        while (slow) { // 反转链表
+            ListNode *next = slow->next;
+            slow->next = post;
+            post = slow;
+            slow = next;
         }
 
         // 4.
