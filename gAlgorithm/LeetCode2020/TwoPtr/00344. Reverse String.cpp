@@ -5,7 +5,7 @@
 // Output: ["h","a","n","n","a","H"]
 
 // 翻转字符串
-class Solution {
+class Solution { // 索引标记法
 public:
     void reverseString(vector<char>& s) {
         if (s.empty()) return;
@@ -13,5 +13,15 @@ public:
         for (int i = 0; i < mid; ++i) {
             swap(s[i], s[s.size()-i-1]);
         }
+    }
+};
+
+class Solution { // 双指针前后逼近法
+public:
+    void reverseString(vector<char>& s) {
+        if (s.empty()) return;
+        int head = 0, tail = s.size()-1;
+        while (head < tail)
+            swap(s[head++], s[tail--]);
     }
 };
