@@ -1,5 +1,7 @@
+小林 coding 中有很多至关重要的 tcp 理论, 看一下ta的博客
 https://www.cnblogs.com/xiaolincoding/p/12995358.html
 https://www.cnblogs.com/xiaolincoding/archive/2004/01/13/13067971.html
+
 https://blog.csdn.net/sinat_20184565/article/details/104828782
 
 syn-cookies

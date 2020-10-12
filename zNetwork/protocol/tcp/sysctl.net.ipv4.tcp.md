@@ -3,6 +3,7 @@ https://my.oschina.net/newchaos/blog/4339323       tcp参数调优
 ls -1 /proc/sys/net/ipv4/tcp_*         每个字段的含义(主要是tcp的)
 Documentation/networking/ip-sysctl.txt 内核官方的解析
 区分 tcp_orphan_retries tcp_retries1 tcp_retries2 tcp_synack_retries tcp_syn_retries
+理解 RTO 时间
 
 # tcp 参数应用
 
@@ -28,6 +29,12 @@ Documentation/networking/ip-sysctl.txt 内核官方的解析
 
 # tcp 参数列表 (全部) /proc/sys/net/ipv4/tcp*
 ## tcp_abort_on_overflow
+1. 在 连接队列溢出时; 往客户端发 RST. (使得客户端感知)
+2. 客户端connect之后马上返回用户态; 内核接收RST后会关闭连接; 此时客户端 write/read 会返回 EIO
+3. 默认不发送, 即客户端二次握手后处于ESTABLISHED状态, 但连接实际没有建立, 浪费客户端资源
+   1. 客户端触发keepavlive机制 or 应用层心跳才会回收连接
+   2. keepalive 触发时机得看客户端的 tcp_keepalive* 参数
+
 ## tcp_adv_win_scale
 ## tcp_allowed_congestion_control
 ## tcp_app_win
@@ -139,9 +146,7 @@ static void tcp_event_data_sent(struct tcp_sock *tp, struct sock *sk) {
     1. 首次调用; 不重传; 等待 1s
     2. 第一次重传后 等待 2  s
     3. 第二次重传后 等待 4  s
-    4. 第三次重传后 等待 8  s
-    5. 第四次重传后 等待 16 s
-    6. 第五次重传后 等待 32 s
+    4. 第 n次重传后 等待 `2**n` s
 4. 因此; `connect()` 超时时间 = `2**(tcp_syn_retries+1) - 1`
 5. 用户进程的fd 设置局部的超时时间or重传次数 tcp_syn_retries
     1. `int syn_retries = 4;`
@@ -155,8 +160,15 @@ static void tcp_event_data_sent(struct tcp_sock *tp, struct sock *sk) {
     6. 连接成功后该函数需要重新把fd 设置为阻塞; 避免上层调用者误解
     7. `select()`  返回-1时; 获取底层错误原因 `getsockopt(conn_fd, SOL_SOCKET, SO_ERROR, sock_errno, sizeof(sock_errno));`
 
-## tcp_synack_retries
-
+## tcp_synack_retries 第二次握手重传 (默认是5; 建议下调为3)
+1. 直接影响 `listen()` 处于 SYN_RCVD 状态的fd (`ss -tnpl state syn-recv`) 的重传次数
+2. 最终影响 `listen()` 处与 SYN_RCVD 状态的fd (`ss -tnpl state syn-recv`) 被销毁的时间
+3. 内核首次发送 syn-ack 报文后; 进入超时等待
+    1. 首次调用; 不重传; 等待 1s
+    2. 第一次重传后 等待 2  s
+    3. 第二次重传后 等待 4  s
+    4. 第 n次重传后 等待 `2**n` s
+4. 超时时间 = `2**(tcp_synack_retries+1) - 1`
 
 ## tcp_syncookies
 https://segmentfault.com/a/1190000019292140 原理
@@ -212,7 +224,7 @@ tcp_conn_request()
 3. 建议 8760 256960 4088000
 ## tcp_workaround_signed_windows
 
-## tcp_retries2:   数据报文重传  (默认是15; 建议下调至5)
+## tcp_retries2 数据报文重传  (默认是15; 建议下调至5)
 1. 直接影响 数据报文的重传   (为啥会影响 `recv族` ?)
 2. 最终影响 `recv族` 和 `read` 的超时时间; (超时计算不懂)
     1.  5 超时时间为30秒
@@ -233,12 +245,6 @@ tcp_conn_request()
 ## tcp_retries1
 
 ## tcp_orphan_retries
-
-## tcp_synack_retries
-为了打开对端的连接，内核需要发送一个SYN并附带一个回应前面一个SYN的ACK。
-也就是所谓三次握手中的第二次握手。
-这个设置决定了内核放弃连接之前发送SYN+ACK包的数量
-即处于 SYN_RCVD 状态的服务端, 等待 第三次握手的 ack 的重传次数
 
 
 

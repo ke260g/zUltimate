@@ -1,7 +1,7 @@
 # tcp 三次握手 半连接队列 和 全连接队列
 参考 https://www.cnblogs.com/xiaolincoding/p/12995358.html
-1. 半连接队列，也称 syn 队列
-2. 全连接队列，也称 accepet 队列 (ss -tnp | grep SYN_RECV)
+1. 半连接队列, 也称 syn 队列 ( `ss -tnpl` 的 Recv-Q 列)
+2. 全连接队列, 也称 accepet 队列 (`ss -tnp state syn-recv`)
 
 ## 调试
 1. 查看半连接队列
@@ -10,10 +10,17 @@
 2. 查看全连接队列 (listen 的 fd 接收缓存)
     1. ` ss -tnpl` 的 Recv-Q 列
     2. `netstat -tpnl` 的 Recv-Q 列
-3. 检查半连接队列溢出 `ss -s`
-4. 检查全连接队列溢出 `ss -s`
+3. 检查半连接队列溢出 `ss -s | grep ?`
+4. 检查全连接队列溢出 `ss -s | grep ?`
 5. 调整半连接队列 `tcp_max_syn_backlog`
 6. 调整全连接队列 `/proc/sys/net/core/somaxconn` 和 `listen`的第二个参数
+7. 模拟半连接溢出 `hping3 -S -p 8080 --flood 127.0.0.1` (也是模拟 http 的半连接攻击)
+    + `-S` 使用 SYN 攻击
+    + `-p 8080` http 服务器端口
+8. 模拟全连接溢出 `wrk -t 4 -c 30000 -d 120s http:/127.0.0.1:8080`
+    + `-t 4` 使用的线程数
+    + `-c 30000` 半连接个数
+    + `-d 120s` 持续120秒
  
 ## 机制
 1. 服务端收到客户端的 syn 请求后
@@ -50,14 +57,20 @@ bool sk_acceptq_is_full(const struct sock *sk) {
     return sk->sk_ack_backlog > sk->sk_max_ack_backlog;
 }
 ```
-2. 半连接队列大小 (理论值 和 实际值)
+2. 半连接队列大小的理论值为 3者最小
+    1. 半连接队列理论大小 ( sysctl_max_syn_backlog 的最近2次方值向上取整 )
+    2. 全连接队列大小
+    3. 没有开启 tcp_syncookies 时; 则选择 sysctl_max_syn_backlog * 3/4
 ```c++
 // 内核版本 3.16.81
 // 1. 右移法判断溢出; 即小于 2**max_qlen_log (等于 就溢出了)
 // 2. 按照以下算法; 队列大小是 sysctl_max_syn_backlog 的最近2的次方值; 向上取整
 // 3. 所以 sysctl_max_syn_backlog 为 1024 对应的理论大小 2048
 // 4. 由于队列满了导致的半连接丢包 主要有3种情况
-// 4.1 
+// 4.1 半连接队列满了
+// 4.2 全连接队列满了
+// 4.3 没有开启 syncookies 时; 超过 sysctl_max_syn_backlog 的 3/4
+//     即开启 tcp_syncookies 能扩容半连接队列(上线 仍然是 理论大小, 也受全连接队列限制)
 int reqsk_queue_is_full(const struct request_sock_queue *queue) {
     return queue->listen_opt->qlen >> queue->listen_opt->max_qlen_log;
 }
