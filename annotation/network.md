@@ -63,6 +63,8 @@ echo 5  > /proc/sys/net/ipv4/tcp_orphan_retries #
 
 ## Q: tcp 拥塞管理 相关问题
 
+## Q: tcp 的 seq 号是如何确定
+
 ## Q: 一个连接有多少个参数唯一确定?
 1. 协议号 tcp/ udp
 2. 本端 ip

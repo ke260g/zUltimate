@@ -5,28 +5,28 @@ Documentation/networking/ip-sysctl.txt 内核官方的解析
 区分 tcp_orphan_retries tcp_retries1 tcp_retries2 tcp_synack_retries tcp_syn_retries
 
 # tcp 参数应用
-## Q: 三次握手丢弃连接
-+ 问题本身是 服务端处理三层握手不过来
-1. 上调服务端二次握手后, 等待客户端三次握手的队列
-    + /proc/sys/net/ipv4/tcp_max_syn_backlog 
-2. 上调服务端listen调用的缓存队列(已经完成连接, 但是没有accept的)
-    + /proc/sys/net/core/somaxconn
-2. 在 连接队列溢出时; 往客户端发 RST. (使得客户端感知)
-    + 如果不发送; 客户端二次握手后处于ESTABLISHED状态; 要等48 hours触发keepavlive机制才会回收
-    + 浪费客户端资源
-    + 客户端connect之后马上返回用户态; 内核接收RST后会关闭连接; 此时客户端 write/read 会返回 EIO
-```sh
-echo 1024 > /proc/sys/net/ipv4/tcp_max_syn_backlog # 默认是 128
-echo 1024 > /proc/sys/net/core/somaxconn           # 默认是 128
-echo 1 > /proc/sys/net/ipv4/tcp_abort_on_overflow  # 默认不开
-```
 
-## Q: 客户端 SYN 之后的等待时间
-```sh
-echo 3 > /proc/sys/net/ipv4/tcp_syn_retries
-```
 
-# tcp 参数列表
+# skb 参数列表 (部分) /proc/sys/net/core/
+1. `rmem_*` `wmem_*` 是整个协议栈共用的; `tcp_rmem` `tcp_wmem` 仅针对 tcp 的 
+## rmem_default (默认接收缓存) (bytes)
+默认 229376 建议 256960
+## rmem_max (最大接收缓存) (bytes)
+默认 131071 建议 513920
+## wmem_default (默认发送缓存) (bytes)
+默认 229376 建议 256960
+## wmem_max (最大发送缓存) (bytes)
+默认 131071 建议 513920
+## netdev_max_backlog (网卡上协议栈前的sbk队列)
+默认 1000 建议 2000
+## somaxconn (全连接队列大小)
+1. 默认 128 建议 1024 or 2048
+2. 实际上与 listen 调用的第二个参数比较选更小值
+
+## optmem_max (每个socket 允许的最大缓冲区)
+默认 20480 建议 81920
+
+# tcp 参数列表 (全部) /proc/sys/net/ipv4/tcp*
 ## tcp_abort_on_overflow
 ## tcp_adv_win_scale
 ## tcp_allowed_congestion_control
@@ -40,23 +40,26 @@ echo 3 > /proc/sys/net/ipv4/tcp_syn_retries
 ## tcp_dsack
 ## tcp_early_retrans
 ## tcp_ecn
-## tcp_fack
 ## tcp_fastopen
 ## tcp_fin_timeout
 减少 FIN_WAIT_2 进入 TIME_WAIT  的等待时间
 ## tcp_frto
-## tcp_keepalive_intvl
-当探测没有确认时，重新发送探测的频度。缺省是75秒。
-## tcp_keepalive_probes
-在认定连接失效之前，发送多少个TCP的keepalive探测包。缺省值是9。
-这个值乘以tcp_keepalive_intvl之后决定了，一个连接发送了keepalive之后可以有多少时间没有回应。
+
+
 ## tcp_keepalive_time
-tcp 发送 keepalive 心跳的时长; 默认2小时
-当keepalive打开的情况下，TCP发送keepalive消息的频率。
-(由于目前网络攻击等因素,造成了利用这个进行的攻击很频繁,曾经也有cu 的朋友提到过,
-  说如果2边建立了连接,然后不发送任何数据或者rst/fin消息,
-  那么持续的时间是不是就是2小时,空连接攻击? 
-  tcp_keepalive_time就是预防此情形的.我个人在做nat服务的时候的修改值为1800秒)
+1. tcp 发送 keepalive 心跳的时长; 单位是秒
+    + 当keepalive打开的情况下 TCP 发送 keepalive 消息的频率
+2. 默认 7200 (即 2小时) 建议下调为 1800 (30分钟)
+3. 下调该值的场景:
+
+## tcp_keepalive_intvl
+1. 当 tcp_keepalive_time 间隔后 发送的 keepalive 没有确认
+   重新发送探测的等待时间
+2. 默认为 75 (秒) 建议下调为 30
+## tcp_keepalive_probes
+1. 判定连接失效之前，发送 keepalive 的个数
+2. 默认是 9（个)  建议下调为 3
+
 ## tcp_limit_output_bytes
 ## tcp_low_latency
 ## tcp_max_orphans
@@ -69,8 +72,14 @@ tcp 发送 keepalive 心跳的时长; 默认2小时
 注意！如果你设置这个值大于1024，最好同时调整include/net/tcp.h中的TCP_SYNQ_HSIZE，
 以保证 TCP_SYNQ_HSIZE*16 ≤ tcp_max_syn_backlo，然后重新编译内核。
 ## tcp_max_tw_buckets
-系 统同时保持timewait套接字的最大数量。如果超过这个数字，time-wait套接字将立刻被清除并打印警告信息。
+系统同时保持timewait套接字的最大数量。如果超过这个数字，time-wait套接字将立刻被清除并打印警告信息。
 ## tcp_mem
+1. 有三个值; 单位是内存页个数(即4K)
+    1. 第一个: 最小内存使用
+    2. 第二个: 触发"内存压力模式"的阈值
+    3. 第三个: 内存使用的上限
+2. 默认 137322 183097 274644
+
 ## tcp_min_snd_mss
 ## tcp_min_tso_segs
 ## tcp_moderate_rcvbuf
@@ -83,9 +92,24 @@ tcp 发送 keepalive 心跳的时长; 默认2小时
 因为这样的套接字会消耗很多重要的资源。参见 tcp_max_orphans
 ## tcp_reordering
 ## tcp_retrans_collapse
-## tcp_rmem
+## tcp_rmem ( { 最小 / 默认 / 最大 } 接收缓存 )
+1. 有三个值; 单位是bytes
+    1. 第一个 tcp 最小接收缓存
+    2. 第二个 tcp 默认接收缓存 (小于 rmem_default)
+    3. 第三个 tcp 最大接收缓存 (小于 rmem_max)
+2. 默认 4096 87380  4011232
+3. 建议 8760 256960 4088000
+
 ## tcp_sack (selected ack)
-特别针对丢失的数据包使用选择性ACK，这样有助于快速恢复。
+1. 选择性应答乱序接收到的报文来提高性能
+    1. 通知发送者只发送丢失的报文; 而不是一整个发送窗口的??
+2. 代价是消耗更多CPU计算资源
+3. 默认1 表示开启 公网环境中应该开启; 内网环境中应该??
+
+## tcp_fack
+1. 转发性应答 (有什么用?)
+2. 默认1 表示开启
+
 ## tcp_slow_start_after_idle (周期性重置TCP拥塞窗口) (默认是1)
 1. 开启后; TCP拥塞窗口会在一个RTO时间空闲之后重置为初始拥塞窗口(CWND)大小
 ```c++
@@ -179,7 +203,13 @@ tcp_conn_request()
 一般来说TCP/IP允许窗口尺寸达到65535字节。对于速度确实很高的网络而言这个值可能还是太小。这个选项允许设置上G字节的窗口大小，有利于在带宽*延迟很大的环境中使用。
 
 一旦内核认为它无法发包，就会丢弃这个包，并向发包的主机发送ICMP通知
-## tcp_wmem
+## tcp_wmem ( { 最小 / 默认 / 最大 } 发送缓存 )
+1. 有三个值; 单位是bytes
+    1. 第一个 tcp 最小发送缓存
+    2. 第二个 tcp 默认发送缓存 (小于 wmem_default)
+    3. 第三个 tcp 最大发送缓存 (小于 wmem_max)
+2. 默认 4096 87380  4011232
+3. 建议 8760 256960 4088000
 ## tcp_workaround_signed_windows
 
 ## tcp_retries2:   数据报文重传  (默认是15; 建议下调至5)
