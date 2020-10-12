@@ -62,6 +62,7 @@ echo 5  > /proc/sys/net/ipv4/tcp_orphan_retries #
 ## Q: tcp 滑动窗口 相关问题
 
 ## Q: tcp 拥塞管理 相关问题
+滑动窗口大小的范围
 
 ## Q: 一个连接有多少个参数唯一确定?
 1. 协议号 tcp/ udp
@@ -71,3 +72,4 @@ echo 5  > /proc/sys/net/ipv4/tcp_orphan_retries #
 5. 对段 端口
 
 ## http
+

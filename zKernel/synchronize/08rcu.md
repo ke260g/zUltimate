@@ -1,4 +1,3 @@
-
 [TOC]
 http://www2.rdrop.com/users/paulmck/rclock/ // 文档资源
 http://www2.rdrop.com/users/paulmck/RCU/RCU.2018.11.21c.PSU-full.pdf
@@ -134,7 +133,16 @@ void get() {
     rcu_read_unlock();
     return _entry;
 }
-void set() {
+void set(k, v) {
+    p = get(k);
+    q = kmalloc(sizeof(*p), GFP_KERNEL);
+    *q = *p;  // 先复制一份节点
+    q->v = v; // 设置为传入参数
+    list_replace_rcu(&p->list, &q->list); // rcu替换 原语
+    synchronize_rcu(); // 阻塞; 等待所以读引用销毁
+    kfree(p);
+}
+void add() {
     list_add_rcu();
 }
 ```
