@@ -8,6 +8,10 @@
 4. 删除倒数第k个节点
     1. 00019. Remove Nth Node From End of List
        (这里有个坑；找的是第n个节点的前驱; 即倒数n+1个节点; 如果倒数第n个节点就是head; 需要特殊处理)
+5. 旋转链表
+    1. 01290. Convert Binary Number in a Linked List to Integer
+       成环后; 找到顺数第`len - k%len`个节点作为尾巴破环
+       尾巴的next就是新的头
 
 ## 链表成环
 00141. Linked List Cycle                   判断是否有环
@@ -25,6 +29,5 @@ LCOF 25. Reverse Linked List
 00024. Swap Nodes in Pairs     单次操作两个节点 (本质上可以操作N个; N < 长度)
 
 ## 先递归操作next 子链表; 再操作当前节点 (正向求长度 逆向递归回溯求索引)
-01290. Convert Binary Number in a Linked List to Integer
 00061. Rotate List  旋转本质: 链表成环 > 根据索引找到新的头的前驱破环(前驱next = nullptr)
     + 顺数 len - k % len 即前驱
