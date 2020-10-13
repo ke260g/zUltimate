@@ -27,13 +27,19 @@ Documentation/networking/ip-sysctl.txt 内核官方的解析
 ## optmem_max (每个socket 允许的最大缓冲区)
 默认 20480 建议 81920
 
+# ip 参数列表 (/proc/sys/net/ipv4/ip_local_port_range)
+
 # tcp 参数列表 (全部) /proc/sys/net/ipv4/tcp*
 ## tcp_abort_on_overflow
 1. 在 连接队列溢出时; 往客户端发 RST. (使得客户端感知)
-2. 客户端connect之后马上返回用户态; 内核接收RST后会关闭连接; 此时客户端 write/read 会返回 EIO
-3. 默认不发送, 即客户端二次握手后处于ESTABLISHED状态, 但连接实际没有建立, 浪费客户端资源
-   1. 客户端触发keepavlive机制 or 应用层心跳才会回收连接
-   2. keepalive 触发时机得看客户端的 tcp_keepalive* 参数
+2. 开启后客户端connect之后马上返回用户态; 内核接收RST后会关闭连接; 此时客户端 write/read 会返回 EIO
+3. 如果服务器不发送RST, 服务端连接实际还没有建立, 还处于半连接队列(即没有销毁)
+   处于ESTABLISHED状态下的客户端会等待服务器的ack,
+   客户端等待超时后, 会重发 第三次握手的ack,
+   直到服务端半连接队列有空间后, 连接仍然可以建立
+4. 当服务器过载时, 建议临时开启, 通知客户端的应用层执行"停顿"的逻辑,
+   避免服务器长期过载
+   客户端也因此可以得知服务器半连接队列过载了
 
 ## tcp_adv_win_scale
 ## tcp_allowed_congestion_control
@@ -49,9 +55,8 @@ Documentation/networking/ip-sysctl.txt 内核官方的解析
 ## tcp_ecn
 ## tcp_fastopen
 ## tcp_fin_timeout
-减少 FIN_WAIT_2 进入 TIME_WAIT  的等待时间
+FIN_WAIT_2 进入 TIME_WAIT  的等待时间
 ## tcp_frto
-
 
 ## tcp_keepalive_time
 1. tcp 发送 keepalive 心跳的时长; 单位是秒
@@ -69,6 +74,9 @@ Documentation/networking/ip-sysctl.txt 内核官方的解析
 
 ## tcp_limit_output_bytes
 ## tcp_low_latency
+1. 默认关闭
+2. 允许TCP/IP栈适应在高吞吐量情况下低延时的情况
+如果开启, 会有啥后果?
 ## tcp_max_orphans
 系 统中最多有多少个TCP套接字不被关联到任何一个用户文件句柄上。
 如果超过这个数字，孤儿连接将即刻被复位并打印出警告信息
@@ -139,7 +147,7 @@ static void tcp_event_data_sent(struct tcp_sock *tp, struct sock *sk) {
 
 ## tcp_stdurg
 
-## tcp_syn_retries: 第一次握手重传 (默认是5; 建议下调至3)
+## tcp_syn_retries: 第一次握手重传
 1. 直接影响 `connect()` 发送了syn但超时没有收到第二次握手后 重传的次数
 2. 最终影响 `connect()` 超时时间; 默认是 63 秒(63 = 2**6 - 1); 很慢
 3. `connect()` 发送 syn后等待时间不是常数; 而是根据本次调用的重传次数线性增加
@@ -159,23 +167,27 @@ static void tcp_event_data_sent(struct tcp_sock *tp, struct sock *sk) {
     5. `select()`  返回-1表示错误; 返回0表示超时; 返回1(只传入了一个fd)表示连接成功
     6. 连接成功后该函数需要重新把fd 设置为阻塞; 避免上层调用者误解
     7. `select()`  返回-1时; 获取底层错误原因 `getsockopt(conn_fd, SOL_SOCKET, SO_ERROR, sock_errno, sizeof(sock_errno));`
++ LAN 环境中, 建议下调至3, 使得错误连接错误尽快保留给客户端
++ WAN 环境中, 在网络不稳定,丢包严重时, 建议上调, 从而保证连接, 避免过多的销毁重连
 
-## tcp_synack_retries 第二次握手重传 (默认是5; 建议下调为3)
+## tcp_synack_retries 第二次握手重传
 1. 直接影响 `listen()` 处于 SYN_RCVD 状态的fd (`ss -tnpl state syn-recv`) 的重传次数
-2. 最终影响 `listen()` 处与 SYN_RCVD 状态的fd (`ss -tnpl state syn-recv`) 被销毁的时间
+2. 最终影响 `listen()` 处与 SYN_RCVD 状态的fd (`ss -tnpl state syn-recv`) 被销毁时间
 3. 内核首次发送 syn-ack 报文后; 进入超时等待
     1. 首次调用; 不重传; 等待 1s
     2. 第一次重传后 等待 2  s
     3. 第二次重传后 等待 4  s
     4. 第 n次重传后 等待 `2**n` s
 4. 超时时间 = `2**(tcp_synack_retries+1) - 1`
++ 如果服务器面对半连接攻击和重度访问, 建议下调, 加速半连接队列节点的销毁
++ 如果网络不稳定, 丢包严重时, 建议上调, 从而保证连接
 
 ## tcp_syncookies
 https://segmentfault.com/a/1190000019292140 原理
 https://blog.csdn.net/sinat_20184565/article/details/104828782 实现
 https://lwn.net/Articles/277146/ 设计
 1. 设计背景: 避免 or 减缓 syn-flood 半连接攻击
-2. 实现本质: 启用后; 第二次握手时不使用backlog 半连接队列
+2. 实现本质: 启用后; 第二次握手时不使用 backlog 半连接队列
     1. 减少 backlog 半连接队列的资源分配; 还是要分配的 不过只是一个整形
     2. hash 客户端的报文 timestamp + 客户端MSS的低3bit + T(本地时间戳)
 3. 功能缺陷
@@ -183,7 +195,7 @@ https://lwn.net/Articles/277146/ 设计
     2. 忽略的客户端其他字段 wscale / sack
 4. 参数
     1. 数值0 表示始终不用
-    2. 数值1 表示连接压力较大时启用
+    2. 数值1 表示连接压力较大时启用 (过载服务器一般用这个)
     3. 数值2 表示始终启用
 5. 实现
 ```c++
@@ -202,6 +214,12 @@ tcp_conn_request()
 
 时间戳可以避免序列号的卷绕。一个1Gbps的链路肯定会遇到以前用过的序列号。
 时间戳能够让内核接受这种“异常”的数据包。
+
+TCP时间戳（会在TCP包头增加12个字节），
+以一种比重发超时更精确的方法（参考RFC 1323）
+来启用对RTT 的计算;
+在代理服务器环境中, 在系统时间对不上的情况下, 可能会导致被丢弃
+
 ## tcp_tso_win_divisor
 ## tcp_tw_recycle
 1. TIME_WAIT 的 sockets 启用快速回收, 从而抑制 TIME_WAIT socket的数量
@@ -212,9 +230,18 @@ tcp_conn_request()
 1. TIME_WAIT 的 sockets 可重新用于新的连接 (如果fd满了的情况下)
 
 ## tcp_window_scaling
-一般来说TCP/IP允许窗口尺寸达到65535字节。对于速度确实很高的网络而言这个值可能还是太小。这个选项允许设置上G字节的窗口大小，有利于在带宽*延迟很大的环境中使用。
+一般来说TCP/IP允许窗口尺寸达到65535字节。
+对于速度确实很高的网络而言这个值可能还是太小。
+这个选项允许设置上G字节的窗口大小,
+有利于在带宽*延迟很大的环境中使用。
 
 一旦内核认为它无法发包，就会丢弃这个包，并向发包的主机发送ICMP通知
+
+启用RFC 1323定义的window scaling，
+要支持超过64KB的TCP窗口，
+必须启用该值（1表示启用），
+TCP窗口最大至1GB，TCP连接双方都启用时才生效。
+
 ## tcp_wmem ( { 最小 / 默认 / 最大 } 发送缓存 )
 1. 有三个值; 单位是bytes
     1. 第一个 tcp 最小发送缓存

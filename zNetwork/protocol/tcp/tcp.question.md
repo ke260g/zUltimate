@@ -48,8 +48,8 @@ echo 30 > /proc/sys/net/ipv4/tcp_keepalive_invtl  # 默认 75 （秒)
 1. tcp_syncookies  当出现 syn 等待队列溢出时; 启用cookies 处理
 2. tcp_tw_reuse    TIME_WAIT 的 sockets 可重新用于新的 连接
 3. tcp_tw_recycle  TIME_WAIT 的 sockets 启用快速回收(默认是2MSL)
-4. tcp_fin_timeout 减少 FIN_WAIT_1/2 进入 TIME_WAIT  的等待时间
-    + 超过这个时间; FIN_WAIT_1/2 强制进入 TIME_WAIT
+4. tcp_fin_timeout 减少 FIN_WAIT_2 进入 TIME_WAIT  的等待时间
+    + 超过这个时间; FIN_WAIT_2 强制进入 TIME_WAIT
 5. tcp_orphan_retries
 6. 参数 listen的fd前设置 SO_REUSEADDR
     + `setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *)&opt , sizeof(int);`
@@ -61,3 +61,13 @@ echo 1  > /proc/sys/net/ipv4/tcp_tw_recycle     # 默认 0
 echo 30 > /proc/sys/net/ipv4/tcp_fin_timeout    # 默认60
 echo 5  > /proc/sys/net/ipv4/tcp_orphan_retries # ??
 ```
+
+## Q: 如何进行tcp优化 3个角度
+1. 三次握手
+    + 第一次 tcp_syn_retries
+    + 第二次 半连接队列扩容 tcp_max_syn_backlog somaxconn backlog(listen第二参数)
+    + 第二次 半连接队列停用 tcp_syncookies 一般来说只需要设置为 1
+    + 第二次 半连接队列时效 tcp_synack_retries
+    + 第三次 
+2. 四次挥手
+3. 数据传输
