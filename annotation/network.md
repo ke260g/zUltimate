@@ -19,6 +19,15 @@ https://blog.csdn.net/qq_33436509/article/details/81946968
 3. shutdown()只会关闭连接，但是不会释放占用的文件描述符。
 4. 所以即使使用了SHUT_RDWR类型调用shutdown()关闭连接的读写通道，也要close()来释放的文件描述符
 
+## Q: shutdown 关闭读写方向的区别
+1. shutdown(SHUT_RD) 读方向
+    1. 丢弃接收缓冲区的数据；后续再收到新的数据，会对数据进行 ACK，然后悄悄地丢弃
+    2. 即对端还是会接收到 ACK，根本不知道数据已经被丢弃
+    + 因为这样对端连接才能维持, 然后本端才能继续发送, 写方向没有关闭的
+2. shutdown(SHUT_WR) 写方向 称为"半关闭连接"
+    1. 发送发送缓存区的数据; 并发送一个 FIN 报文给对端; 本地进程write/send 将报错
+3. shutdown(SHUT_RDWR)：相当于 SHUT_RD 和 SHUT_WR 操作各一次，关闭读和写两个方向
+
 ## Q: tcp 的可靠连接体现在哪几点
 
 ## Q: TCP-SYN 半连接攻击 

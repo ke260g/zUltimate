@@ -9,7 +9,10 @@ Documentation/networking/ip-sysctl.txt 内核官方的解析
     4. tcp_syn_retries:    SYN_SENT 状态下的 syn 重传
     5. tcp_synack_retries: SYN_RECV 状态下的 syn-ack 重传
 理解 RTO 时间
-
+内存 rmem_default rmem_max wmem_default wmem_max
+     tcp_rmem tcp_wmem tcp_mem
+     内存设置过小 无法充分使用网络带宽 无法提升传输效率
+     内存设置过大 滞留在缓冲区的待 ack太多 耗尽内存资源 导致无法响应新的连接
 # tcp 参数应用
 
 
@@ -61,9 +64,32 @@ Documentation/networking/ip-sysctl.txt 内核官方的解析
 ## tcp_dsack
 ## tcp_early_retrans
 ## tcp_ecn
-## tcp_fastopen
+## tcp_fastopen 绕过三次握手
+1. 参数值:
+    1. 1 客户端支持 `connect()` 和 收发调用
+    2. 2 服务端支持 `listen()` 和 收发调用
+    3. 3 服务端和客户端都支持 (bit-or-wise 操作)
+    4. 0 关闭
+2. 首次建立连接的流程
+    1. client send tcp-syn, tcp头包含fastopen-option, cookie字段为空, 指示客户端开启了tcp_fastopen
+    2. server 接收到开启 tcp_fastopen 空 cookie 的 syn, 生成 cookie, 放到 syn-ack 种返回客户端
+    3. client 接收到带 cookie 的 syn-ack; 缓存到本地
+3. 后序建立连接的流程 (cookie 有效) (比如一次 http 的 get/post 请求)
+    1. client 发送 { cookie + syn + data } 的报文到服务端
+    2. server 检验 cookie
+    3. server 返回 syn+ack, ack 包含data部分; 且服务端进程 listen + recv得到 data
+    4. 服务端后序处理并返回 响应内容到客户端
+4. 后序建立连接的流程 (cookie 无效)
+    1. client 发送 { cookie + syn + data } 的报文到服务端
+    2. server 检验 cookie
+    3. server 返回 syn+ack, ack 仅仅只是 client 的 syn
+    4. 客户端重发 data (窗口算法 ack 没确认); 且客户端删除 cookie 缓存
+    5. 下一次客户端建立连接; 重新走首次建立连接的流程
++ 这个功能最终减少了三次握手中的一次 RTT 消耗
++ 这个功能使用了 tcp-option 的类型 34 字段
+
 ## tcp_fin_timeout
-FIN_WAIT_2 进入 TIME_WAIT  的等待时间
+FIN_WAIT_2 进入 TIME_WAIT  的等待时间; 单位是秒
 ## tcp_frto
 
 ## tcp_keepalive_time
@@ -85,9 +111,8 @@ FIN_WAIT_2 进入 TIME_WAIT  的等待时间
 1. 默认关闭
 2. 允许TCP/IP栈适应在高吞吐量情况下低延时的情况
 如果开启, 会有啥后果?
-## tcp_max_orphans
-系 统中最多有多少个TCP套接字不被关联到任何一个用户文件句柄上。
-如果超过这个数字，孤儿连接将即刻被复位并打印出警告信息
+
+
 ## tcp_max_syn_backlog
 记 录的那些尚未收到客户端确认信息的连接请求的最大值。
 对于有128M内存的系统而言，缺省值是1024，小内存的系统则是128。
@@ -97,6 +122,9 @@ FIN_WAIT_2 进入 TIME_WAIT  的等待时间
 ## tcp_max_tw_buckets
 系统同时保持timewait套接字的最大数量。如果超过这个数字，time-wait套接字将立刻被清除并打印警告信息。
 ## tcp_mem (tcp总内存)
+1. TIME_WAIT socket 的最大数量
+2. 超过这个数值 socket 进入 TIME_WAIT 后直接销毁不再等待
+    + 内核会打印告警信息
 1. 有三个值; 单位是内存页个数(即4K)
     1. 第一个: 最小内存使用
     2. 第二个: 触发"内存压力模式"的阈值
@@ -106,15 +134,33 @@ FIN_WAIT_2 进入 TIME_WAIT  的等待时间
 ## tcp_min_snd_mss
 ## tcp_min_tso_segs
 ## tcp_moderate_rcvbuf
+开启发送缓冲的调节功能; 默认关闭
+
 ## tcp_mtu_probing
 ## tcp_no_metrics_save (路由计量)
 开启后; tcp 缓存连接的多个指标到 route cache 中;
 从而在短时间内 重新是相同ip建立连接时, 更快地设置初始化条件(窗口大小?? 还是什么东西??)
 ## tcp_notsent_lowat
+
 ## tcp_orphan_retries
-本端试图关闭TCP连接之前重试多少次。缺省值是7，相当于50秒~16分钟(取决于RTO)。
-如果你的机器是一个重载的WEB服务器，你应该考虑减低这个值，
-因为这样的套接字会消耗很多重要的资源。参见 tcp_max_orphans
+1. FIN 报文的重传次数
+    1. FIN_WAIT_1 状态下的 FIN 重传次数
+    2. LAST_ACK   状态下的 FIN 重传次数
+2. 遇到 零窗口攻击; 仅仅下调该值是不够的; 还得下调 tcp_max_orphans
+3. 这个值默认为0, 内核中表示数值8 (相当于50秒~16分钟(取决于RTO)) 
+    + net/ipv4/tcp_timer.c::tcp_orphan_retries 函数的逻辑: 当该值为0时 重传8次
+
+## tcp_max_orphans
+1. orphans 形式上 没有fd关联的连接
+2. orphans 对应着 close 后还没完成生命周期的连接
+    1. 大部分是 (FIN_WAIT_1, FIN_WAIT_2, LAST_ACK, CLOSING, TIME_WAIT)
+    2. 注意 CLOSE_WAIT 不是; 该状态下客户端还没 close
+    3. 注意 主动 shutdown 但没有 close 的连接不会判定为孤儿进程
+3. 超过这个数值后; 新增 orphans 连接不走四次握手; 内核发送RST 然后销毁
+4. 过载服务器可以下调该值
+    1. 默认是 65536
+    2. 建议值 32768 16384
+
 ## tcp_reordering
 ## tcp_retrans_collapse
 ## tcp_rmem ( { 最小 / 默认 / 最大 } 接收缓存 )
@@ -124,6 +170,16 @@ FIN_WAIT_2 进入 TIME_WAIT  的等待时间
     3. 第三个 tcp 最大接收缓存 (小于 rmem_max)
 2. 默认 4096 87380  4011232
 3. 建议 8760 256960 4088000
+socket 的 SO_RCVBUF 参数优先级更高；覆盖 sysctl 的调节
+
+`echo 1 > tcp_moderate_rcvbuf` 才能开启; 默认是关闭的
+接收缓冲区可以根据系统空闲内存的大小来调节接收窗口：
+  如果系统的空闲内存很多，就可以自动把缓冲区增大一些，从而通知发送者发送更多的报文
+  如果系统的空闲内存不够, 则降低接收缓冲，保证系统正常工作
+  系统内存是否空闲的判定标准 = `tcp_mem[1] <= free_mem <= tcp_mem[2]`
+  即在 tcp_mem 的第二和第三参数间 表示内存不够; 触发调整逻辑
+
+
 
 ## tcp_sack (selected ack)
 1. 选择性应答乱序接收到的报文来提高性能
@@ -219,25 +275,60 @@ tcp_conn_request()
 ## tcp_thin_dupack
 ## tcp_thin_linear_timeouts
 ## tcp_timestamps
-针对同一个IP的连接, 之后建立的连接的时间戳必须要大于之前建立连接的最后时间戳
-否则将直接丢弃这个连接
-
-时间戳可以避免序列号的卷绕。一个1Gbps的链路肯定会遇到以前用过的序列号。
-时间戳能够让内核接受这种“异常”的数据包。
+针对同一个IP的连接, 
+之后建立的连接的时间戳必须要大于之前建立连接的最后时间戳
+否则将丢弃这个连接.
 
 TCP时间戳（会在TCP包头增加12个字节），
 以一种比重发超时更精确的方法（参考RFC 1323）
 来启用对RTT 的计算;
 在代理服务器环境中, 在系统时间对不上的情况下, 可能会导致被丢弃
 
+tcp-option-type: 8
+
+1. 优点:
+    1. 避免 2MSL 即可以绕过 TIME_WAIT; (因为报文自带时间戳)
+    2. 避免了 序列号 绕回的问题(高速网络中会遇到); (因为报文自带时间戳)
+2. 缺陷:
+    1. 
+
 ## tcp_tso_win_divisor
 ## tcp_tw_recycle
 1. TIME_WAIT 的 sockets 启用快速回收, 从而抑制 TIME_WAIT socket的数量
+    1. 但时有可能在 socket 复用时导致数据错乱
 2. 低版本内核 服务器 开启 tcp_tw_recycle 与 tcp_timestamps(默认开启) 会有问题
     1. 如果客户端是使用 NAT 防火墙与 服务器建立连接
     2. 那么 NAT防火墙的时间戳可能是客户端之前, 经过 NAT防火墙与服务器连接会被丢弃
 ## tcp_tw_reuse
 1. TIME_WAIT 的 sockets 可重新用于新的连接 (如果fd满了的情况下)
+2. 只用于连接发起方 `connect()`
+    + 被动连接方 `listen()` 是没用的
+3. 安全性理论
+    1. 由于只用于连接发起方; 因此客户端tcp端口短时间不冲突; 四元组  不会冲突
+    2. TIME_WAIT 的 socket 至少要在1秒后复用(内核实现)；配合 tcp_timestamps 避免冲突
+3. 复用流程1
+    1. `connect()` 方复用 socket; 发送 syn
+    2. `listen()`  方上一个连接已经脱离 LAST_ACK
+    3. 连接正常建立
+4. 复用流程2
+    1. `connect()`端 复用 socket; 发送 syn
+    2. `listen()` 端 上一个连接还处于 LAST_ACK；检查 syn 的 timestamps 后丢弃 
+    3. `listen()` 端 在 LAST_ACK 状态中重复 FIN；而 `connect()`方处于 SYN_SENT
+    4. `connect()`端 SYN_SENT 状态中收到 FIN 会返回 RST 给 `listen()` 端
+    5. `listen()` 端 最终脱离 LAST_ACK 进入CLOSED
+    6. `listen()` 端 最终收到 SYN 走正常的三次握手
+```log
+      connect()端                    listen() 端
+       SYN_SENT @ ----- SYN -------> * LAST_ACK (timestamps 丢包)
+tcp_syn_retries @ ----- SYN -------> * LAST_ACK (timestamps 丢包)
+                @ .................. *
+                @ <---- FIN -------- * tcp_orphan_retries
+                @ ----- RST -------> * LAST_ACK
+                @ .................. * CLOSED
+tcp_syn_retries @ ----- SYN -------> * CLOSED
+                  ..................
+                  正常的三次握手过程
+```
 
 ## tcp_window_scaling (扩展传输窗口)
 一般来说TCP/IP允许窗口尺寸达到65535字节。
@@ -259,6 +350,12 @@ TCP窗口最大至1GB，TCP连接双方都启用时才生效。
     3. 第三个 tcp 最大发送缓存 (小于 wmem_max)
 2. 默认 4096 87380  4011232
 3. 建议 8760 256960 4088000
+socket 的 SO_SNDBUF 参数优先级更高; 覆盖 sysctl 的调节
+
+发送缓冲区是自行调节的，
+当发送方发送的数据被确认后，
+并且没有新的数据要发送，
+就会把发送缓冲区的内存释放掉。
 
 ## tcp_workaround_signed_windows
 
