@@ -3,6 +3,11 @@ https://my.oschina.net/newchaos/blog/4339323       tcp参数调优
 ls -1 /proc/sys/net/ipv4/tcp_*         每个字段的含义(主要是tcp的)
 Documentation/networking/ip-sysctl.txt 内核官方的解析
 区分 tcp_orphan_retries tcp_retries1 tcp_retries2 tcp_synack_retries tcp_syn_retries
+    1. tcp_orphan_retries: LAST_ACK, FIN_WAIT_1 状态下的 fin 报文重传
+    2. tcp_retries1
+    3. tcp_retries2:
+    4. tcp_syn_retries:    SYN_SENT 状态下的 syn 重传
+    5. tcp_synack_retries: SYN_RECV 状态下的 syn-ack 重传
 理解 RTO 时间
 
 # tcp 参数应用
@@ -18,11 +23,14 @@ Documentation/networking/ip-sysctl.txt 内核官方的解析
 默认 229376 建议 256960
 ## wmem_max (最大发送缓存) (bytes)
 默认 131071 建议 513920
+## optmem_max (协议栈最大内存)
+
 ## netdev_max_backlog (网卡上协议栈前的sbk队列)
 默认 1000 建议 2000
 ## somaxconn (全连接队列大小)
 1. 默认 128 建议 1024 or 2048
 2. 实际上与 listen 调用的第二个参数比较选更小值
+
 
 ## optmem_max (每个socket 允许的最大缓冲区)
 默认 20480 建议 81920
@@ -88,7 +96,7 @@ FIN_WAIT_2 进入 TIME_WAIT  的等待时间
 以保证 TCP_SYNQ_HSIZE*16 ≤ tcp_max_syn_backlo，然后重新编译内核。
 ## tcp_max_tw_buckets
 系统同时保持timewait套接字的最大数量。如果超过这个数字，time-wait套接字将立刻被清除并打印警告信息。
-## tcp_mem
+## tcp_mem (tcp总内存)
 1. 有三个值; 单位是内存页个数(即4K)
     1. 第一个: 最小内存使用
     2. 第二个: 触发"内存压力模式"的阈值
@@ -99,7 +107,9 @@ FIN_WAIT_2 进入 TIME_WAIT  的等待时间
 ## tcp_min_tso_segs
 ## tcp_moderate_rcvbuf
 ## tcp_mtu_probing
-## tcp_no_metrics_save
+## tcp_no_metrics_save (路由计量)
+开启后; tcp 缓存连接的多个指标到 route cache 中;
+从而在短时间内 重新是相同ip建立连接时, 更快地设置初始化条件(窗口大小?? 还是什么东西??)
 ## tcp_notsent_lowat
 ## tcp_orphan_retries
 本端试图关闭TCP连接之前重试多少次。缺省值是7，相当于50秒~16分钟(取决于RTO)。
@@ -229,7 +239,7 @@ TCP时间戳（会在TCP包头增加12个字节），
 ## tcp_tw_reuse
 1. TIME_WAIT 的 sockets 可重新用于新的连接 (如果fd满了的情况下)
 
-## tcp_window_scaling
+## tcp_window_scaling (扩展传输窗口)
 一般来说TCP/IP允许窗口尺寸达到65535字节。
 对于速度确实很高的网络而言这个值可能还是太小。
 这个选项允许设置上G字节的窗口大小,
@@ -249,6 +259,7 @@ TCP窗口最大至1GB，TCP连接双方都启用时才生效。
     3. 第三个 tcp 最大发送缓存 (小于 wmem_max)
 2. 默认 4096 87380  4011232
 3. 建议 8760 256960 4088000
+
 ## tcp_workaround_signed_windows
 
 ## tcp_retries2 数据报文重传  (默认是15; 建议下调至5)
