@@ -1,6 +1,5 @@
 小林 coding 中有很多至关重要的 tcp 理论, 看一下ta的博客
 https://www.cnblogs.com/xiaolincoding/p/12995358.html ()
-https://www.cnblogs.com/xiaolincoding/archive/2004/01/13/13067971.html (tcp调参)
 
 syn-cookies
 https://blog.csdn.net/onetwothreef/article/details/8894690?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-1.nonecase&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromBaidu-1.nonecase
@@ -42,8 +41,6 @@ tcp-option-type 3 指示最大窗口扩展后的值
 
 主动建立连接的一方在 SYN 报文中发送这个选项
 被动建立连接的一方只有在收到带窗口扩大选项的 SYN 报文之后才能发送这个选项
-
-
 
 所以 TCP 的传输速度 实际上，受制于发送窗口与接收窗口，以及网络设备传输能力
 缓冲区与网络传输能力匹配，那么缓冲区的利用率就达到了最大化
