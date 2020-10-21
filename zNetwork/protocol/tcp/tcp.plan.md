@@ -66,3 +66,10 @@ q: 如何确定最大传输速度 ?
   且 发送窗口上限 决定了"已发送未确认"的报文上限 (游离的报文)
   如果 发送缓冲区 大于 带宽时延积; 网络设备过载; 丢包重传严重
   如果 发送缓冲区 小于 带宽时延积; 不能很好地发挥网络的性能
+
+TCP/IP详解 卷1 卷2
+图解TCP/IP.竹下隆史
+The TCP/IP Guide.Charles M. Kozierok.
+
+https://coolshell.cn/articles/11564.html
+https://coolshell.cn/articles/11609.html
