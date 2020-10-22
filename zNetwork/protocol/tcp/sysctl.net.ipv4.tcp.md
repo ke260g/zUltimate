@@ -249,13 +249,8 @@ static void tcp_event_data_sent(struct tcp_sock *tp, struct sock *sk) {
 + 如果网络不稳定, 丢包严重时, 建议上调, 从而保证连接
 
 ## tcp_syncookies
-https://segmentfault.com/a/1190000019292140 原理
-https://blog.csdn.net/sinat_20184565/article/details/104828782 实现
-https://lwn.net/Articles/277146/ 设计
 1. 设计背景: 避免 or 减缓 syn-flood 半连接攻击
 2. 实现本质: 启用后; 第二次握手时不使用 backlog 半连接队列
-    1. 减少 backlog 半连接队列的资源分配; 还是要分配的 不过只是一个整形
-    2. hash 客户端的报文 timestamp + 客户端MSS的低3bit + T(本地时间戳)
 3. 功能缺陷
     1. 客户端的MSS有8bit; 这里只用了 3bit
     2. 忽略的客户端其他字段 wscale / sack
@@ -263,14 +258,6 @@ https://lwn.net/Articles/277146/ 设计
     1. 数值0 表示始终不用
     2. 数值1 表示连接压力较大时启用 (过载服务器一般用这个)
     3. 数值2 表示始终启用
-5. 实现
-```c++
-tcp_conn_request()
-    > cookie_init_sequence
-    > cookie_v4_init_sequence
-    > __cookie_v4_init_sequence
-    > secure_tcp_syn_cookie
-```
 
 ## tcp_thin_dupack
 ## tcp_thin_linear_timeouts
