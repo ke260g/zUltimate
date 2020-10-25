@@ -14,20 +14,19 @@ inline int value_on_pos(int value, int pos) { // 数位上的值
 void __sort_radix(vector<int> &a, int exp) {
     // 1. 分配桶
     vector<int> b(a.size(), 0); // 存储"被排序数据"的临时数组
-    vector<int> buckets(10, 0); // 桶
-
-    // 2. 将数据出现的次数存储在buckets[]中
+    vector<int> counter(10, 0); // 计数器
+    // 2. 将数据出现的次数存储在counter[]中
     for (int i = 0; i < a.size(); i++) 
-        buckets[ value_on_pos(a[i], exp) ]++;
+        counter[ value_on_pos(a[i], exp) ]++;
 
-    // 3. 变换 buckets 为 位置数组;  buckets[i] 指示 其代表的数值 在排序后最后出现的索引
-    for (int i = 1; i < buckets.size(); i++)
-        buckets[i] += buckets[i - 1];
+    // 3. 变换 counter 为 位置数组;  counter[i] 指示 其代表的数值 在排序后最后出现的索引
+    for (int i = 1; i < counter.size(); i++)
+        counter[i] += counter[i - 1];
     
     // 4. 倒序遍历原始数组，从统计数组找到正确位置，输出到结果数组
     for (int i = a.size() - 1; i >= 0; i--)
-        b[--buckets[value_on_pos(a[i], exp)]] = a[i];
-        /* 因为 buckets[i] 是从1开始算的, 所以索引必须减一 */
+        b[--counter[value_on_pos(a[i], exp)]] = a[i];
+        /* 因为 counter[i] 是从1开始算的, 所以索引必须减一 */
 
     // 5. 将排序好的数据赋值给a[]
     for (int i = 0; i < a.size(); i++)      
