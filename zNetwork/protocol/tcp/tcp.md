@@ -23,53 +23,6 @@ server: send SYN ACK seq=K ack=J+1
 client: send ACK ack=K+1
 (client => ESTABLISHED) (server => ESTABLISHED)
 
-# 2. 四次握手
-## 2.1 四次挥手 状态流1  (FIN - FIN - ACK - ACK) (两端同时close)
-```log
-主动端                                         主动端
-close  @ ----- FIN -------> <---- FIN -------- # close
-       @ ----- ACK -------> <---- ACK -------- #
-实际上:
-
-主动端                      主动端
-close  @ ----- FIN -------> #
-       @ <---- FIN -------- # close
-       @ ----- ACK -------> #
-       @ <---- ACK -------- #
-```
-1. 两端: FIN_WAIT_1 -> CLOSING -> TIME_WAIT -> CLOSED
-  + 当两端同时发起关闭时; 即一段发起关闭, FIN报文还没到另一端时, 另一端也发起了关闭
-
-## 2.2 四次挥手 状态流2  (FIN - ACK - FIN - ACK)
-```log
-主动关闭                         被动关闭
-close       @ ----- FIN -------> #
-FIN_WAIT_1  @                    #
-            @ <---- ACK -------- # 这个是内核收到FIN后触发的; 然后用户态EIO
-FIN_WAIT_2  @                    # CLOSE_WAIT
-            @ <---- FIN -------- # 用户 close / shutdown
-TIME_WAIT   @                    # LAST_ACK
-            @ ----- ACK -------> #
-CLOSED      @                    # CLOSED     收到最后的ACK后才进入CLOSED状态
-```
-1. 主动端: FIN_WAIT_1 -> FIN_WAIT_2 -> TIME_WAIT -> CLOSED
-2. 被动端: CLOSE_WAIT -> LAST_ACK -> CLOSED
-
-## 2.3 四次挥手 状态流3  (FIN - ACK&FIN - ACK)
-```log
-主动关闭                         被动关闭
-close       @ ----- FIN -------> *
-FIN_WAIT_1  @                    *
-            @ <---- ACK FIN----- * 用户 close / shutdown
-            @                    * CLOSE_WAIT -> LAST_ACK (短时间内切换)
-            @ ----- ACK -------> *
-TIME_WAIT   @                    * CLOSED     收到最后的ACK后才进入CLOSED状态
-```
-
-1. 主动端: FIN_WAIT_1 -> TIME_WAIT -> CLOSED
-2. 被动端: CLOSE_WAIT -> LAST_ACK -> CLOSED
-  + 被动端 内核把用户态的 ACK 和 FIN 合并到一起发了一个包
-
 # 超时重传 ( seq + ack )
 + 三种情况 (正常 发送方的包未到达接收方 接收方的ack未到达发送方)
 + 发送方 针对长时间没收到ack的包 重发
@@ -145,80 +98,8 @@ https://www.cnblogs.com/alifpga/p/7675850.html (后半部分)
 滑动窗口是控制接收以及同步数据范围的，通知发送端目前接收的数据范围，用于流量控制，接收端使用。拥塞窗口是控制发送速率的，避免发的过多，发送端使用。因为tcp是全双工，所以两边都有滑动窗口。
 两个窗口的维护是独立的，滑动窗口主要由接收方反馈缓存情况来维护，拥塞窗口主要由发送方的拥塞控制算法检测出的网络拥塞程度来决定的。
 
-# 2MSL 等待时间
-https://www.cnblogs.com/zxpo/p/5234220.html
-## 运行机制
-1. 主动关闭者(FIN_WAIT_2) 发出最后一个ack 后进入TIME_WAIT
-    + ack 网络中可能会被丢掉
-2. 被动关闭者(LAST_ACK) 如果没有等到最后的ack；则定是重发 fin
-3. 主动关闭者(TIME_WAIT) 如果在2MSL期间收到FIN; 则重发最后一个ack; 并再次等待2MSL
-## 设计背景
-1. 客户端关闭连接后再向服务端重新发起连接
-2. 无法保证客户端是否复用了同一个本地端口号
-3. 如果恰好使用了同一个端口号; 且上一次连接的数据报文存在于网络中
-4. 那么上一次连接的数据报文重新进入本次连接; 导致数据的混淆
-## Q: 2MSL 导致TIME_WAIT的socket在进程中长时间占据fd 无法释放
 
 
-# close 和 shutdown 的区别
-https://blog.csdn.net/justlinux2010/article/details/20913755
-## 标准术语
-1. close 是文件系统层的关闭
-    + 单个进程close一个fd后不保证马上释放连接
-    + 当fd在内核中的引用数为0才会释放连接
-2. shutdown 直接对socket层的关闭 (不处理引用计数) (不能shutdown非socket的fd)
-    + 调用后; 其他进程占有这个连接的fd; read返回EOF; write可能触发SIGPIPE(buffer满了)
-    + 对于处于 TCP_CLOSE 状态的socket 会返回 ENOTCONN错误
-3. shutdown 可以选择性 只关闭读 or 只关闭写 or 同时关闭读写
-    + 但 close 必须同时关闭读写方向
-4. shutdown只关闭socket不释放fd; 所以进程也要调用close释放fd
-    + 但 close 释放fd 释放socket
-
-## shutdown 实现
-+ `int shutdown(int sockfd, int how);`
-    1. how = SHUT_RD / SHUT_WR / SHUT_RDWR
-```c++
-sys_shutdown() {
-    // 1. 根据fd 索引socket
-    // 2. 根据socket 的 sk_common 结构体 的 协议方法 sk_prot 的 shutdown 释放
-    // 3. udp 和 tcp 的 shutdown 方法都是 inet_shutdown
-    sockfd_lookup_light(); 
-    socket->sk->sk_prot->shutdown(sk, how);
-}
-inet_shutdown() {
-    // 1. tcp 有 tcp_shutdown() 的额外回调
-    // 2. udp  没有; 只有内存释放
-}
-tcp_shutdown() {
-    // 1. 针对  TCP_ESTABLISHED、TCP_SYN_SENT、TCP_SYN_RECV TCP_CLOSE_WAIT
-    //    调用 tcp_close_state() 状态变更
-    tcp_close_state();
-}
-tcp_close_state() {
-    // 1. 如果状态状态变更 则 tcp_send_fin()
-    tcp_send_fin();
-}
-```
-
-## close 实现
-+ 调用链
-```c++
-sys_close()  // 根据 fd 类型调用释放方法
-    > fd->file->filp_close();  // file 是 struct file
-    > __fput()
-    > fd->file->f_op->release(); // socket 的 release 函数是 sock_close
-sock_close() // 根据 sk 类型调用释放方法
-    > inet_release()    // tcp 和 udp
-    > raw_release()     // raw
-    > netlink_release() // netlink
-    > unix_release()    // unix 套接字
-inet_release() // 根据协议簇调用释放方法
-    > tcp_close()       // struct proto tcp_prot;
-    > udp_lib_close()   // struct proto udp_prot;
-    > ping_close()      // struct proto ping_prot;
-    > raw_close()       // struct proto raw_prot;
-tcp_close();
-```
 
 分包
 要发送的数据大于TCP缓冲剩余空间
