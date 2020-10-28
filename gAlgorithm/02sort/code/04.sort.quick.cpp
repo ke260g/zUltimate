@@ -20,6 +20,7 @@ void __sort_quick(vecotr<int> &a, int head, int tail) {
     int pivot = a[pivot_index];
     swap(a[pivot_index], a[head]); // 基准值放到数组头; 不参与划分
 #if 1  // 双指针法::滑动窗口
+
     int mid = head+1, i = head+1;
     // [head+1, mid) // < pivot
     // [mid, i)      // >= pivot (等于 pivot; 必须放到窗口内)

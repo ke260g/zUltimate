@@ -4,6 +4,8 @@ void sort_shell(vector<int> &a) {
     // 三级循环
     for (int gap = a.size()/2; gap > 0; gap /= 2) { // 按照增量分组; 初始增量是 size/2
         for (int i = gap; i < a.size(); i += gap) { // i 作为分组的末元素; 尾部开始递归
+#if 1 // 写法1 (for-break)
+
             int j = i;
             int pivot = a[i];
             for (j -= gap; j >= 0; j -= gap) {
@@ -13,6 +15,15 @@ void sort_shell(vector<int> &a) {
                     break;
             }
             a[j+gap] = pivot;
+#else // 写法2 (while)
+            int pivot = a[i];
+            int j = i - d;
+            while (j >= 0 && a[j] > pivot) {
+                a[j+d] = a[j];
+                j -= d;
+            }
+            a[j+d] = pivot;
+#endif
         }
     }    
 }

@@ -13,6 +13,12 @@ Documentation/networking/ip-sysctl.txt 内核官方的解析
      tcp_rmem tcp_wmem tcp_mem
      内存设置过小 无法充分使用网络带宽 无法提升传输效率
      内存设置过大 滞留在缓冲区的待 ack太多 耗尽内存资源 导致无法响应新的连接
+
+诊断tcp:
+/proc/net/netstat
+/proc/net/snmp
+/proc/$pid/net/snmp
+
 # tcp 参数应用
 
 

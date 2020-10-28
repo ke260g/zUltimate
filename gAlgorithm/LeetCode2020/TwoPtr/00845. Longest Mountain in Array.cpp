@@ -41,11 +41,11 @@ public:
         for (int i = 1; i < A.size(); i++) {
             // 判断山势的走向
             if (A[i] == A[i-1])
-                direction = 0;
+                direction = 0;  // 表示平原
             else if (A[i] < A[i-1])
-                direction = -1;
+                direction = -1; // 表示下坡
             else if (A[i] > A[i-1])
-                direction = 1;
+                direction = 1;  // 表示上坡
 
             if (pd < direction) {
                 // 发现谷底
