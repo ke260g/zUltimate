@@ -2,10 +2,15 @@
 hash 扩容的过程
 hash 用链表解决冲突时; 还是冲突怎么办: 扩容
 hash 和 array 的优缺点比较
-为什么 bucket个数是2的次方大小时，hash的效率最高
 
-java HashMap  https://zhuanlan.zhihu.com/p/151027796
-hash 入门讲解 https://zhuanlan.zhihu.com/p/144296454
+1. hash 函数
+2. hash 冲突解决
+    1. 拉链法
+    2. 开放地值法OA （线性探测LP，, 和 P）
+    3. 
+3. 字符串hash
+
+java HashMap 的研究 https://zhuanlan.zhihu.com/p/151027796
 
 # 1. hash 函数
 ## 1.1 直接定址法; (线性函数)
@@ -96,27 +101,19 @@ int get_hash(const string& s) {
 
 # 4. hash 扩容
 ## 4.1 redis 的 dict 实现
-https://www.cnblogs.com/mfrbuaa/p/5245064.html
-注意看后半部分
-1. 关键变量
-    1. `struct dictht` 里面包含了mask 用来取模; 代表hash函数
-    2. `dictht ht[2];` ht[0] 旧桶; ht[1] 正在扩展的新桶
-    3. `d->rehashidx` 迁移游标
-2. 负载因子超过阈值;
-    1. 扩容: ht[1] = new dictht(ht[0].size)
-    2. 迁移因子 = 0
-3. get:
-    1. 如果完成迁移: 在 `ht[0]` 中查找
-    2. 如果正在迁移: 在 `ht[1]` 中查找
-                     找不到 且 hash值 小于 d->rehashindex; (说明可能还在 `ht[0]`中)
-                     在 `ht[0]` 中查找
-4. put:
-    1. 如果完成迁移: 用旧hash函数插入 `ht[0]` 
-    2. 如果正在迁移: 用新hash函数插入 `ht[1]`
-                 迁移`ht[0].table[d->rehashindx++]` 到 `ht[1]` 中
-5. 完成迁移: 
-    1. `free(ht[0]); ht[0] = ht[1]; ht[1] = NULL;`
-    2. `d->rehashindex = 0;`
+1. hash表中桶的个数为 n_bucket, 已插入元素为 size;
+2. 负载因子 `load_factor = size / n_bucket;` 较大时; 需要扩容
+    1. `cursor = 0`
+3. 扩大的容量 形同vector把当前桶的个数翻倍
+4. 为了平滑插入(避免一次性地 hash元素迁移); 使用两个 hash 表;
+    1. 当需要扩容时; 新桶个数为原来的两倍 设置迁移游标cursor = 0
+    2. insert: 扩容后新插入元素; 先用旧hash函数插入到旧桶中
+               旧桶`buckets[cursor++]`中的元素迁移到新桶
+    3. 假设旧hash表桶个数为 n; `cursor < n` 表示还没有迁移完成
+    4. 需要新插入 n 个元素才可完成迁移
+    5. obtain: 在没有完成迁移时; 先用旧hash函数求哈希值;
+               如果hash值小于cursor; 表明在旧桶已经分裂; 先在旧桶中找; 再用新hash函数求hash值在新桶中找
+               如果hash值大于cursor; 表明在新桶中; 在新桶中找
 
 ## 4.2 自己实现的线性hash
 1. 负载因子 `load_factor = size / bucket.size();` 超出阈值; 扩容
@@ -132,5 +129,3 @@ https://www.cnblogs.com/mfrbuaa/p/5245064.html
     2. get: 没有完成迁移时; 用新hash函数求hash值; 如果hash值大于 corsor; 再用旧hash函数求hash值在旧桶中找
             已经完成迁移后; 用旧hash函数求hash值; 在旧桶中找
     3. 完成迁移时; `旧hash函数 = 新hash函数`
-
-## 4.3 c++ stl::map
