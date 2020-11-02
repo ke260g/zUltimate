@@ -84,6 +84,7 @@ int get_hash(const string& s) {
     }
     return res;
 }
+// 返回后还需要根据桶取模
 ```
 1. (每一个字符 + base * 乘上个字符的摸) 然后取模
     + 目的: hash值与字符所在的位置有关
@@ -91,8 +92,16 @@ int get_hash(const string& s) {
     + 数学原理不是很理解
 3. 一般地, Module 会选择较大的质数
 
-### 版本2:
-
+### 3.2 字符串 hash 例子2
+```c++
+int get_hash(const string& s) {
+    unsigned int res = 5318;
+    for (int i = 0; i < s.size(); ++i) {
+        h = h*33 + s[i];
+    }
+    return res; // 返回后还需要根据桶取模
+}
+```
 
 # 4. hash 扩容
 ## 4.1 redis 的 dict 实现
