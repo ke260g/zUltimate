@@ -18,7 +18,7 @@ Documentation/networking/ip-sysctl.txt 内核官方的解析
 /proc/net/netstat
 /proc/net/snmp
 /proc/$pid/net/snmp
-
+netstat -s
 # tcp 参数应用
 
 

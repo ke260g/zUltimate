@@ -63,25 +63,20 @@ private:
         return mid;
     }
 public:
-    void partition(vector<int> &a, int head, int tail) {
-        if (head >= tail) return;
-        int pivot_index = findpivot(a, head, tail);
-        int pivot = a[pivot_index];
-        swap(a[head], a[pivot_index]);
-        // (head, mid) // <  piovt
-        // [mid, i) // >= piovt
-        // [i, tail) // pending
-        int mid = head+1;
-        for (int i = head+1; i <= tail; i++) {
-            if (a[i] < pivot)
-                swap(a[mid++], a[i]);
-        }
-        swap(a[mid-1], a[head]);
-        partition(a, head, mid-2);
-        partition(a, mid, tail);
-    }
     void sort(vector<int> &a) {
-        partition(a, 0, a.size()-1);
+        for (int d = a.size()/2; d > 0; d /= 2) {
+            for (int i = d; i < a.size(); i++) {
+                int j = i;
+                int pivot = a[i];
+                for (j -= d; j >= 0; j -= d) {
+                    if (a[j] > pivot)
+                        a[j+d] = a[j];
+                    else
+                        break;
+                }
+                a[j+d] = pivot;
+            }
+        }
     }
 };
 
