@@ -4,7 +4,7 @@
 
 ## Q: 什么是 TCP 四次握手? 有缺点分别是什么?
 
-## Q: 三次握手丢弃连接 and  半连接DOS攻击预防
+## Q: 半连接DOS攻击应对 or 半连接队列满了处理?
 + 问题本身是 服务端处理三层握手不过来
 ```sh
 echo 2048 > /proc/sys/net/ipv4/tcp_max_syn_backlog # 默认是 256
@@ -28,6 +28,17 @@ echo 3 > /proc/sys/net/ipv4/tcp_syn_retries
 
 # 2. 四次挥手问题
 ## Q: server 有大量 TIME_WAIT 怎么触发的? 该如何处理?
+1. 系统主动 关闭大量连接; 等待2MSL产生
+2. 有大量peer端异常or超时, 导致系统关闭连接, 后续等待2MSL
+3. 网络异常, 主动连接方的ACK 没有被peer端收到, peer 处于 LAST_ACK 反复重发 FIN
+```sh
+echo 1  > /proc/sys/net/ipv4/tcp_syncookies     # 默认 0
+echo 1  > /proc/sys/net/ipv4/tcp_tw_reuse       # 默认 0
+echo 1  > /proc/sys/net/ipv4/tcp_tw_recycle     # 默认 0
+echo 16384 > /proc/sys/net/ipv4/tcp_max_tw_buckets # 默认 65536
+echo 30 > /proc/sys/net/ipv4/tcp_fin_timeout    # 默认60
+echo 5  > /proc/sys/net/ipv4/tcp_orphan_retries # ??
+```
 1. tcp_tw_reuse    TIME_WAIT 的 sockets 可重新用于新的 连接
 2. tcp_tw_recycle  TIME_WAIT 的 sockets 启用快速回收(默认是2MSL)
 3. tcp_max_tw_buckets 下调 TIME_WAIT 的 sockets
@@ -38,14 +49,6 @@ echo 3 > /proc/sys/net/ipv4/tcp_syn_retries
     + 超过这个时间; FIN_WAIT_1 强制进入 FIN_WAIT_2
 6. 参数 listen的fd前设置 SO_REUSEADDR
     + `setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (const void *)&opt , sizeof(int);`
-```sh
-echo 1  > /proc/sys/net/ipv4/tcp_syncookies     # 默认 0
-echo 1  > /proc/sys/net/ipv4/tcp_tw_reuse       # 默认 0
-echo 1  > /proc/sys/net/ipv4/tcp_tw_recycle     # 默认 0
-echo 16384 > /proc/sys/net/ipv4/tcp_max_tw_buckets # 默认 65536
-echo 30 > /proc/sys/net/ipv4/tcp_fin_timeout    # 默认60
-echo 5  > /proc/sys/net/ipv4/tcp_orphan_retries # ??
-```
 
 ## Q: 为什么要有四次挥手? 而握手只需要三次?
 
@@ -54,9 +57,12 @@ echo 5  > /proc/sys/net/ipv4/tcp_orphan_retries # ??
 1. 防止具有相同"四元组"的"旧"数据包被收到
     + 四元组 = 源ip 目的ip 源端口 目的端口
 2. 保证"被动关闭连接方"能被正确的关闭
-    1. 保证最后的 ACK 能让被动关闭方接收 (才能从LAST_ACK 状态退出)
+    1. 保证最后的 ACK 能让被动关闭方接收 (才能从 LAST_ACK 状态退出)
+    2. 如果"被动关闭连接方"处于 LAST_ACK 没有收到 ACK, 会定时重发 FIN
+       "主动关闭连接方" 处于 TIME_WATI 收到 FIN, 会重发 ACK
 3. 经过 2MSL 这个时间，让两个方向上的数据包都被丢弃
     1. 原来连接的数据包在网络中会消失(TTL)
+    2. "被动关闭连接方" LAST_ACK 状态也超时了
 
 # 3. 滑动窗口问题
 ## Q: 零窗口攻击
@@ -103,8 +109,9 @@ echo 30 > /proc/sys/net/ipv4/tcp_keepalive_invtl  # 默认 75 （秒)
 ## Q: 什么是快速重传 ?
 当连续收到3次重复的ack, 即判定存在丢失
 ## Q: 优点 和 缺点分别是什么?
-优点: 避免超时重传 的等待时间过长的问题
-缺点: 无法确认重传窗口内全部数据还是重传丢失的数据
++ 优点: 避免超时重传 的等待时间过长的问题
++ 缺点: 无法确认重传窗口内全部数据还是重传丢失的数据
+    + 因为有可能 丢失数据 的后面数据是正常收到的
 ## Q: 如何避免快速重传的缺点?
 开启 sack, echo 1 > /proc/net/core/ipv4/tcp_sack
 使得 接收方把接收窗口的 bitmap 通过ack返回给发送端
@@ -137,6 +144,7 @@ echo 30 > /proc/sys/net/ipv4/tcp_keepalive_invtl  # 默认 75 （秒)
     + tcp_fin_timeout     (FIN_WAIT_2 的状态维持时间) (仅主动方)
     + tcp_max_tw_buckets  (TIME_WAIT 状态的连接上限)  (仅主动方)
     + tcp_tw_reuse        (复用 TIME_WAIT 状态的连接) (仅主动方)
+    + tcp_tw_recycle      (加快 TIME_WAIT 状态的回收) (仅主动方)
     + tcp_timestamps      (复用 TIME_WAIT 状态的连接) (仅主动方)
 3. 数据传输
     + 扩大窗口大小 tcp_window_scaling
@@ -160,4 +168,14 @@ echo 30 > /proc/sys/net/ipv4/tcp_keepalive_invtl  # 默认 75 （秒)
   定义数据包包头
   在数据包之间设置边界(即定义包头 包尾)
 
-## Q: tcp 的状态列表
+## Q: tcp 的状态 列举一下?
+CLOSED
+SYN_SENT
+SYN_RCVD
+ESTABLISHED
+FIN_WAIT_1
+FIN_WAIT_2
+TIME_WAIT
+CLOSING
+CLOSE_WAIT
+LAST_ACK
