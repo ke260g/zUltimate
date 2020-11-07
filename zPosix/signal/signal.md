@@ -16,7 +16,8 @@ A child created via fork(2) inherits a copy of its parent's signal dispositions.
     2. `exec()` 创建 elf 时, 重置为默认的 dispositions
     3. `clone()` 如果指定了 CLONE_SIGHAND 才会使得子进程共享父进程的信号回调
 3. 信号要么被捕捉; 要么被重新设置其他default dispositions
-4. 不允许被捕捉的信号: 
+4. 不允许被捕捉的信号: SIGSTOP SIGKILL SIGBUS
+    1. 应用: 一般进程内部捕获 SIGTERM 被正常干掉; 进程间先SIGTERM礼貌性干掉对方; 如果干不掉, 那就用SIGKILL/SIGBUS强行干掉
 
 常用的 "标准信号" 解析
 SIGHUP        1       Term    Hangup detected on controlling terminal or death of controlling process

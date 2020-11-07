@@ -1,7 +1,7 @@
 # tcp 三次握手 半连接队列 和 全连接队列
 参考 https://www.cnblogs.com/xiaolincoding/p/12995358.html
-1. 半连接队列, 也称 syn 队列 ( `ss -tnpl` 的 Recv-Q 列)
-2. 全连接队列, 也称 accepet 队列 (`ss -tnp state syn-recv`)
+1. 半连接队列, listen 中内核已发发送 syn+ack 的队列, 也称 syn 队列 ( `ss -tnpl` 的 Recv-Q 列)
+2. 全连接队列, listen 中内核已完成三次握手但没有 accept 的队列, 也称 accepet 队列 (`ss -tnp state syn-recv`)
 
 ## 调试
 1. 查看半连接队列
@@ -11,9 +11,14 @@
     1. ` ss -tnpl` 的 Recv-Q 列
     2. `netstat -tpnl` 的 Recv-Q 列
 3. 检查半连接队列溢出 `ss -s | grep ?`
+```txt
+>_ netstat -s | grep -i listen
+100 times the listen queue of a socket overflowed
+100 SYNs to LISTEN sockets ignored
+```
 4. 检查全连接队列溢出 `ss -s | grep ?`
 5. 调整半连接队列 `tcp_max_syn_backlog`
-6. 调整全连接队列 `/proc/sys/net/core/somaxconn` 和 `listen`的第二个参数
+6. 调整全连接队列 `/proc/sys/net/core/somaxconn` 和 `listen` 的第二个参数
 7. 模拟半连接溢出 `hping3 -S -p 8080 --flood 127.0.0.1` (也是模拟 http 的半连接攻击)
     + `-S` 使用 SYN 攻击
     + `-p 8080` http 服务器端口

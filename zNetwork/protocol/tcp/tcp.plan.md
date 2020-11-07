@@ -47,3 +47,6 @@ The TCP/IP Guide.Charles M. Kozierok.
 
 https://coolshell.cn/articles/11564.html
 https://coolshell.cn/articles/11609.html
+
+
+https://www.cnblogs.com/xiaolincoding/p/12732052.html tcp的可靠连接
