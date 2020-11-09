@@ -289,16 +289,14 @@ tcp-option-type: 8
     2. TIME_WAIT 的 socket 至少要在1秒后复用(内核实现)；配合 tcp_timestamps 避免冲突
 
 ## tcp_window_scaling (扩展传输窗口)
-一般来说TCP/IP允许窗口尺寸达到65535字节。
-对于速度确实很高的网络而言这个值可能还是太小。
-这个选项允许设置上G字节的窗口大小,
-有利于在带宽*延迟很大的环境中使用。
+1. tcp-header-window 是 2bytes, 最大指示 `2**16` 即 64K 的窗口大小
+2. tcp-option-window_scaling, 额外增加 14bits, 表示窗口大小, 即最大 1G 窗口大小
+3. 生效流程
+    1. 连接建立前, 收发双方开启该选项
+    2. 主动建立连接的一方在 SYN 报文中发送 tcp_window_scaling 这个选项
+    3. 被动建立连接的一方只有在收到带窗口扩大选项的 SYN 报文之后才能发送这个选项
+    + 被动连接不能主动发送 tcp_window_scaling, 即是否开启由主动连接方决定
 
-一旦内核认为它无法发包，就会丢弃这个包，并向发包的主机发送ICMP通知
-
-启用 rfc 1323 定义的 window scaling,
-要支持超过64KB的TCP窗口, 必须启用该值(1表示启用)
-TCP窗口最大至1GB，TCP连接双方都启用时才生效。
 
 ## tcp_wmem ( { 最小 / 默认 / 最大 } 发送缓存 )
 1. 有三个值; 单位是bytes
