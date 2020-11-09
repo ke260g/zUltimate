@@ -91,7 +91,15 @@ echo 30 > /proc/sys/net/ipv4/tcp_keepalive_invtl  # 默认 75 （秒)
     2. 加快对端物理宕机后; 本段socket的回收
 
 ## 什么是糊涂窗口综合症问题? 如何避免?
-
+1. 问题描述
+    1. 如果接收方一直没有读取数据; 导致发送窗口越来越小
+    2. 到最后，如果接收方腾出几个字节并告诉发送方现在有几个字节的窗口
+        而发送方会义无反顾地发送这几个字节
+    3. 最终, 发送方发了 tcp+ip头 却携带了少量字节; 浪费网络性能
+2. 解决方法
+    1. 接收方不通告小窗口, `窗口 < min(mss, 缓冲区大小/2)` 即提前关闭
+    2. 发送方不发送小数据, `buffer-size > mss or window-size > mss` 才发送 (Nagle 算法)
+    3. 发送方收到之前 ack, 才发数据
 ## Q: 滑动窗口大小如何确定 ?
 1. 接收方的接收缓存 - 减去已接收未读取 = 窗口大小
 2. 接收方在 ack 报文中通过 tcp-header-window 字段告知发送方 窗口大小
@@ -138,6 +146,7 @@ echo 30 > /proc/sys/net/ipv4/tcp_keepalive_invtl  # 默认 75 （秒)
     + 第二次 半连接队列时效 tcp_synack_retries
     + 第三次 全连接队列扩容 somaxconn backlog(listen第二参数)
     + 绕过三次握手 tcp_fastopen
+    + 第二次 半连接队列重置 tcp_abort_on_overflow 是的客户端感知到服务端队列已满, 客户端自行实现等待逻辑
 2. 四次挥手
     + tcp_orphan_retries  (FIN报文重传次数) (主被动方)
     + tcp_max_orphans     (LAST_ACK/FIN_WAIT_1/FIN_WAIT_2 状态下的孤儿连接数) (主被动方)
