@@ -3,16 +3,6 @@
 
 
 
-# todo list
-1. 什么是内存屏障; 为啥 kfifo / seqlock 调用 smp_wmb smp_rmb 就可以解决同步问题
-    + 以及很多调用 wmb / rmb 的地方??
-    + 目的在于能够 见到 wmb / rmb 的地方; 解释清楚为啥需要用到
-2. tasklet   的实现
-3. workqueue 的实现
-4. generic interrupt framework
-
-
-
 https://zhuanlan.zhihu.com/p/22813775?refer=kls-software-arch-world  Linux性能优化12：网络IO的调度模型
 
 https://www.cnblogs.com/listenerln/p/6846328.html 稍微清晰一点的 ip_route_input_slow 函数分析(其实也很鸡肋)

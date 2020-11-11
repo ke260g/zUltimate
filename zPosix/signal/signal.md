@@ -21,7 +21,7 @@ A child created via fork(2) inherits a copy of its parent's signal dispositions.
 
 常用的 "标准信号" 解析
 SIGHUP        1       Term    Hangup detected on controlling terminal or death of controlling process
-SIGINT        2       Term    终端进程
+SIGINT        2       Term    终端终止进程 Ctrl-c
 SIGQUIT       3       Core    Quit from keyboard
 SIGILL        4       Core    Illegal Instruction
 SIGABRT       6       Core    Abort signal from abort(3)
@@ -35,7 +35,7 @@ SIGUSR1   30,10,16    Term    User-defined signal 1
 SIGUSR2   31,12,17    Term    User-defined signal 2
 SIGCHLD   20,17,18    Ign     子进程暂停 or 挂掉; 场景: 通过该信号监管子进程
 SIGCONT   19,18,25    Cont    Continue if stopped
-SIGSTOP   17,19,23    Stop    Stop process
+SIGSTOP   17,19,23    Stop    终端停止进程 Ctrl-z
 SIGTSTP   18,20,24    Stop    Stop typed at terminal
 SIGTTIN   21,21,26    Stop    Terminal input for background process
 SIGTTOU   22,22,27    Stop    Terminal output for background process
