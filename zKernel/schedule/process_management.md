@@ -114,6 +114,24 @@ mm_release() { // 子进程软中断 exec() or exit()
 1. 线程创建系统调用就是 `clone()` strace 可以观察到
 2. 线程创建  `do_fork()` flags 为: `CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD` 等
     + 从而; 子进程与父进程共享 地址空间(VM) 文件系统资源(FS) fd表(FILES) 信号回调(SIGHAND) 线程组(CLONE_THREAD)
+    ```c++
+    copy_process() { // 根据 CLONE_THREAD, 继承 tgid
+        /* ok, now we should be set up.. */
+        p->pid = pid_nr(pid);
+        if (clone_flags & CLONE_THREAD) {
+            p->exit_signal = -1;
+            p->group_leader = current->group_leader;
+            p->tgid = current->tgid;
+        } else {
+            if (clone_flags & CLONE_PARENT)
+                p->exit_signal = current->group_leader->exit_signal;
+            else
+                p->exit_signal = (clone_flags & CSIGNAL);
+            p->group_leader = p;
+            p->tgid = p->pid;
+        }
+    }
+    ```
 3. 对比:  进程创建 `do_fork()` flags 为: `CLONE_SIGCHLD`
 4. 对比: vfork创建 `do_fork()` flags 为: `CLONE_VFORK | CLONE_VM | SIGCHLD`
 
