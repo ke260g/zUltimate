@@ -40,11 +40,11 @@ netstat -s
 1. 默认 128 建议 1024 or 2048
 2. 实际上与 listen 调用的第二个参数比较选更小值
 
-
 ## optmem_max (每个socket 允许的最大缓冲区)
 默认 20480 建议 81920
 
-# ip 参数列表 (/proc/sys/net/ipv4/ip_local_port_range)
+# ip 参数列表 
+## /proc/sys/net/ipv4/ip_local_port_range
 
 # tcp 参数列表 (全部) /proc/sys/net/ipv4/tcp*
 ## tcp_abort_on_overflow
@@ -76,21 +76,6 @@ netstat -s
     2. 2 服务端支持 `listen()` 和 收发调用
     3. 3 服务端和客户端都支持 (bit-or-wise 操作)
     4. 0 关闭
-2. 首次建立连接的流程
-    1. client send tcp-syn, tcp头包含fastopen-option, cookie字段为空, 指示客户端开启了tcp_fastopen
-    2. server 接收到开启 tcp_fastopen 空 cookie 的 syn, 生成 cookie, 放到 syn-ack 种返回客户端
-    3. client 接收到带 cookie 的 syn-ack; 缓存到本地
-3. 后序建立连接的流程 (cookie 有效) (比如一次 http 的 get/post 请求)
-    1. client 发送 { cookie + syn + data } 的报文到服务端
-    2. server 检验 cookie
-    3. server 返回 syn+ack, ack 包含data部分; 且服务端进程 listen + recv得到 data
-    4. 服务端后序处理并返回 响应内容到客户端
-4. 后序建立连接的流程 (cookie 无效)
-    1. client 发送 { cookie + syn + data } 的报文到服务端
-    2. server 检验 cookie
-    3. server 返回 syn+ack, ack 仅仅只是 client 的 syn
-    4. 客户端重发 data (窗口算法 ack 没确认); 且客户端删除 cookie 缓存
-    5. 下一次客户端建立连接; 重新走首次建立连接的流程
 + 这个功能最终减少了三次握手中的一次 RTT 消耗
 + 这个功能使用了 tcp-option 的类型 34 字段
 
@@ -120,13 +105,15 @@ FIN_WAIT_2 进入 TIME_WAIT  的等待时间; 单位是秒
 
 
 ## tcp_max_syn_backlog
-记 录的那些尚未收到客户端确认信息的连接请求的最大值。
-对于有128M内存的系统而言，缺省值是1024，小内存的系统则是128。
-如果服务器不堪重负，试 试提高这个值。
-注意！如果你设置这个值大于1024，最好同时调整include/net/tcp.h中的TCP_SYNQ_HSIZE，
-以保证 TCP_SYNQ_HSIZE*16 ≤ tcp_max_syn_backlo，然后重新编译内核。
+半连接队列的大小, 遇到 ddos 攻击, 或者正常的请求量大, 可以上调这个值
+listen 的第二参数 backlog 指示全连接队列
+
 ## tcp_max_tw_buckets
-系统同时保持timewait套接字的最大数量。如果超过这个数字，time-wait套接字将立刻被清除并打印警告信息。
+系统同时保持 TIME_WAIT 套接字的最大数量
+如果超过这个数字, TIME_WAIT 套接字将立刻被清除并打印警告信息
+TIME_WAIT 状态的 socket 太多, 导致进程无法创建新连接时,
+可以下调该值, 加快 TIME_WAIT 状态的连接 被销毁
+
 ## tcp_mem (tcp总内存)
 1. TIME_WAIT socket 的最大数量
 2. 超过这个数值 socket 进入 TIME_WAIT 后直接销毁不再等待
@@ -139,6 +126,7 @@ FIN_WAIT_2 进入 TIME_WAIT  的等待时间; 单位是秒
 
 ## tcp_min_snd_mss
 ## tcp_min_tso_segs
+
 ## tcp_moderate_rcvbuf
 开启发送缓冲的调节功能; 默认关闭
 
@@ -299,42 +287,16 @@ tcp-option-type: 8
 3. 安全性理论
     1. 由于只用于连接发起方; 因此客户端tcp端口短时间不冲突; 四元组  不会冲突
     2. TIME_WAIT 的 socket 至少要在1秒后复用(内核实现)；配合 tcp_timestamps 避免冲突
-3. 复用流程1
-    1. `connect()` 方复用 socket; 发送 syn
-    2. `listen()`  方上一个连接已经脱离 LAST_ACK
-    3. 连接正常建立
-4. 复用流程2
-    1. `connect()`端 复用 socket; 发送 syn
-    2. `listen()` 端 上一个连接还处于 LAST_ACK；检查 syn 的 timestamps 后丢弃 
-    3. `listen()` 端 在 LAST_ACK 状态中重复 FIN；而 `connect()`方处于 SYN_SENT
-    4. `connect()`端 SYN_SENT 状态中收到 FIN 会返回 RST 给 `listen()` 端
-    5. `listen()` 端 最终脱离 LAST_ACK 进入CLOSED
-    6. `listen()` 端 最终收到 SYN 走正常的三次握手
-```log
-      connect()端                    listen() 端
-       SYN_SENT @ ----- SYN -------> * LAST_ACK (timestamps 丢包)
-tcp_syn_retries @ ----- SYN -------> * LAST_ACK (timestamps 丢包)
-                @ .................. *
-                @ <---- FIN -------- * tcp_orphan_retries
-                @ ----- RST -------> * LAST_ACK
-                @ .................. * CLOSED
-tcp_syn_retries @ ----- SYN -------> * CLOSED
-                  ..................
-                  正常的三次握手过程
-```
 
 ## tcp_window_scaling (扩展传输窗口)
-一般来说TCP/IP允许窗口尺寸达到65535字节。
-对于速度确实很高的网络而言这个值可能还是太小。
-这个选项允许设置上G字节的窗口大小,
-有利于在带宽*延迟很大的环境中使用。
+1. tcp-header-window 是 2bytes, 最大指示 `2**16` 即 64K 的窗口大小
+2. tcp-option-window_scaling, 额外增加 14bits, 表示窗口大小, 即最大 1G 窗口大小
+3. 生效流程
+    1. 连接建立前, 收发双方开启该选项
+    2. 主动建立连接的一方在 SYN 报文中发送 tcp_window_scaling 这个选项
+    3. 被动建立连接的一方只有在收到带窗口扩大选项的 SYN 报文之后才能发送这个选项
+    + 被动连接不能主动发送 tcp_window_scaling, 即是否开启由主动连接方决定
 
-一旦内核认为它无法发包，就会丢弃这个包，并向发包的主机发送ICMP通知
-
-启用RFC 1323定义的window scaling，
-要支持超过64KB的TCP窗口，
-必须启用该值（1表示启用），
-TCP窗口最大至1GB，TCP连接双方都启用时才生效。
 
 ## tcp_wmem ( { 最小 / 默认 / 最大 } 发送缓存 )
 1. 有三个值; 单位是bytes
@@ -365,14 +327,7 @@ socket 的 SO_SNDBUF 参数优先级更高; 覆盖 sysctl 的调节
 6. 这种其中也反映了一个问题: 进程挂掉 vs 机器挂掉
     1. server端进程挂掉 内核会完成tcp协议层的销毁逻辑 发送RST / FIN 给client
     2. server端机器挂掉; client 端的部分连接会出现在不同形式的阻塞
-    3. 如 读请求, syn重传, 已经establish的连接, last_ack等待和fin重传, fin_wait_2等待进入time_wait 
-
-
-# note
-有5个不同的 retries, 傻傻分不清
-## tcp_retries1
-
-## tcp_orphan_retries
+    3. 如 读请求, syn重传, 已经establish的连接, last_ack等待和fin重传, fin_wait_2等待进入time_wait
 
 
 

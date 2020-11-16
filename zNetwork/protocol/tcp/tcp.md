@@ -10,21 +10,21 @@ tcp 的内容相当多; 内容间深度耦合; 先列举几个较大的切入点
 # 4. 重传机制
 
 # 5. 拥塞控制
+https://blog.csdn.net/qq_33436509/article/details/81979024
+https://www.cnblogs.com/alifpga/p/7675850.html (后半部分)
 
 # 6. 状态迁移
 
 # 7. systcl 调参
 
-# 8. 问题集锦
-
-Q: 实现 tcp 可靠连接的关键机制?
-A: 三次握手 四次挥手 滑动窗口 重传机制 拥塞控制
------
-
-# 4. 拥塞控制
-https://blog.csdn.net/qq_33436509/article/details/81979024
-https://www.cnblogs.com/alifpga/p/7675850.html (后半部分)
-
-滑动窗口是控制接收以及同步数据范围的，通知发送端目前接收的数据范围，用于流量控制，接收端使用。拥塞窗口是控制发送速率的，避免发的过多，发送端使用。因为tcp是全双工，所以两边都有滑动窗口。
-两个窗口的维护是独立的，滑动窗口主要由接收方反馈缓存情况来维护，拥塞窗口主要由发送方的拥塞控制算法检测出的网络拥塞程度来决定的。
-
+# 99. references
+1. 小林 coding (总结非常到位)
+    1. https://www.cnblogs.com/xiaolincoding/p/12732052.html tcp的可靠连接
+2. TCP/IP详解
+    1. 卷1
+    2. 卷2 实现
+3. 图解 TCP/IP 竹下隆史
+4. The TCP/IP Guide.Charles M. Kozierok.
+5. tcp 那些事
+    1. https://coolshell.cn/articles/11564.html
+    2. https://coolshell.cn/articles/11609.html

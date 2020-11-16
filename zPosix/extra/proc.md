@@ -24,6 +24,8 @@ fd
 `/proc/[pid]/stat`    status `ps`, most common state { R:Running S:Sleeping D:Disk Z:Zombie T:Stopped }
 `/proc/[pid]/statm`   memory usage
 `/proc/[pid]/status`  human-readable format of stat and statm
+                      里面 tgid，是主线程的pid
+                      主线程的 tgid 和自身 pid相同, 线程创建时，会继承 tgid
 `/proc/[pid]/syscall` just address, not function
 `/proc/[pid]/timers`  posix timer
 `/proc/[pid]/wchan`   当前进程所在的内核函数, 近似系统调用
