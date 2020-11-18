@@ -1,5 +1,3 @@
-李帅的指点
-
 https://leetcode-cn.com/problemset/all
 右边有标签; 可以选的
 
@@ -18,11 +16,18 @@ hash
 | 000039 | Combination Sum | 做不出来
 
 
+## level1 simple
+1. DP                 (x)
+2. List               (x)
+3. Stack              (x)
+4. Tree               (x)
+5. TwoPtr             (x)
+6. Greedy
+7. Divide and Con
+8. Bit
+9. Binary Search      (x)
+10. Sort              ()
+11. Array 
+11. String
 
-
-
-
-
-
-
-
+## level2 middle
