@@ -144,6 +144,26 @@ thread apply $threadId1 $threadId2 continue # 批量 继续执行制定线程
 1. `(gdb) thread apply all bt` 打印所有线程的堆栈
   + `ls -1 /proc/$pid/task/`   获取线程的PID
 
+## Q: 调试core
+```sh
+# 1. 先把 core 的 .debug.symbol 刚掉
+# 2. 拷贝少掉的 library
+find . -name *.debug.symbol | while read f; do mv $f $(echo $f | sed 's|.debug.symbol$||'); done
+cp /lib/libphtread* ./lib/
+cp /lib/libc* ./lib/
+cp /lib/libm* ./lib/
+cp /lib/libdl* ./lib/
+cp /lib/libgcc* ./lib/
+cp /lib/libatomic* ./lib/
+cp /lib/librt*  ./lib/
+cp /lib/ld*     ./lib
+cp /usr/lib/libz* ./usr/lib/
+cp /lib/libpthread* ./lib
+(gdb) file $binary
+(gdb) set solib-absolute-prefix $符号包绝对路径
+(gdb) core-file $corefile
+```
+
 ## 98. gdb dashboard
 ### 98.1 源码浏览 (无法 上下左右  浏览)
 dashboard source -output /dev/pts0  设置模块输出tty
@@ -169,4 +189,3 @@ dashboard expressions clear
 
 xxgdb  把b命令button化而已
 神器 https://github.com/cyrus-and/gdb-dashboard
-

@@ -25,8 +25,8 @@ extern unsigned long volatile __jiffy_data jiffies;
 + `timespec_to_jiffies()` / `jiffies_to_timespec()` / `timeval_to_jiffies()` / `jiffies_to_timeval()`
 
 ## 2.3 获取当前时间 
-`do_gettimeofday()`
-`current_kernel_time()`
+1. `do_gettimeofday()`
+2. `current_kernel_time()`
 
 # 2.4 时钟注册方法
 `clocksource_register_hz()`
@@ -50,7 +50,8 @@ unsigned long msleep_interruptible(unsigned int millisecs);
 ```
 
 # 4. 经验
-+ 不建议在中断、频繁调用的函数中使用 current_kernel_time 方法; 该方法的实时性有偏差??
+1. 不建议在中断、频繁调用的函数中使用 current_kernel_time 方法; 该方法的实时性有偏差
+    1. 直接用 jiffies 
 
 # 99 high freq
 1. 放大内核CPU软件系数
