@@ -149,7 +149,7 @@ thread apply $threadId1 $threadId2 continue # 批量 继续执行制定线程
 # 1. 先把 core 的 .debug.symbol 刚掉
 # 2. 拷贝少掉的 library
 find . -name *.debug.symbol | while read f; do mv $f $(echo $f | sed 's|.debug.symbol$||'); done
-cp /lib/libphtread* ./lib/
+cp /lib/libpthread* ./lib/
 cp /lib/libc* ./lib/
 cp /lib/libm* ./lib/
 cp /lib/libdl* ./lib/
@@ -159,6 +159,7 @@ cp /lib/librt*  ./lib/
 cp /lib/ld*     ./lib
 cp /usr/lib/libz* ./usr/lib/
 cp /lib/libpthread* ./lib
+# 然后, 在这里把缺少的符号包路径, 给 ln 全了
 (gdb) file $binary
 (gdb) set solib-absolute-prefix $符号包绝对路径
 (gdb) core-file $corefile

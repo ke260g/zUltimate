@@ -22,7 +22,7 @@
 class Solution {
 public:
     void sortColors(vector<int>& nums) {
-        // 0: [0, one)    变量 one 表示  小于one 的索引都是 0
+        // 0: (-oo, one)    变量 one 表示  小于one 的索引都是 0
         // 1: [one, i)    大于等于 one 且小于 i 的索引都是 1
         // ?: [i, two)    这部分是未排序的
         // 2: [two, nums.size()) 大于等于 two 的索引都是   2

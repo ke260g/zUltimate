@@ -94,7 +94,7 @@ int uv_loop_init(uv_loop_t* loop) {
   QUEUE_INIT(&loop->wq);
   QUEUE_INIT(&loop->idle_handles);    // 每次轮回都会执行; prepare 之前
   QUEUE_INIT(&loop->async_handles);
-  QUEUE_INIT(&loop->check_handles);
+  QUEUE_INIT(&loop->check_handles);   // 每次轮回都会执行; io 之后
   QUEUE_INIT(&loop->prepare_handles); // 每次轮回都会执行; io 之前
   QUEUE_INIT(&loop->handle_queue);
 
@@ -117,7 +117,7 @@ int uv_loop_init(uv_loop_t* loop) {
 
   loop->timer_counter = 0;
   loop->stop_flag = 0;
-
+  // 这里初始化底层fd, linux 是 epoll, darwin 是 kqueue
   err = uv__platform_loop_init(loop);
   if (err)
     goto fail_platform_init;
@@ -214,19 +214,7 @@ int uv_run(uv_loop_t* loop, uv_run_mode mode) {
 # 6. 监听 uv__io_poll
 ```c++
 void uv__io_poll(uv_loop_t* loop, int timeout) {
-  /* A bug in kernels < 2.6.37 makes timeouts larger than ~30 minutes
-   * effectively infinite on 32 bits architectures.  To avoid blocking
-   * indefinitely, we cap the timeout and poll again if necessary.
-   *
-   * Note that "30 minutes" is a simplification because it depends on
-   * the value of CONFIG_HZ.  The magic constant assumes CONFIG_HZ=1200,
-   * that being the largest value I have seen in the wild (and only once.)
-   */
-  static const int max_safe_timeout = 1789569;
-  static int no_epoll_pwait_cached;
-  static int no_epoll_wait_cached;
-  int no_epoll_pwait;
-  int no_epoll_wait;
+  // ...
   struct epoll_event events[1024];
   struct epoll_event* pe;
   struct epoll_event e;
@@ -371,7 +359,10 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
           have_signals = 1;
         } else {
           uv__metrics_update_idle_time(loop);
-          w->cb(loop, w, pe->events); // 执行回调
+          // 执行回调
+          // 1. 如果是 tcp 服务器, 实际上是 uv__server_io, uv_tcp_listen 时传入
+          // 2. 如果是 tcp 客户端, 实际上是 uv__stream_io, uv_tcp_init 时传入
+          w->cb(loop, w, pe->events);
         }
 
         nevents++;
