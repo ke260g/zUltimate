@@ -17,7 +17,7 @@
 tcp_syn_retries @ ----- SYN -------> * LAST_ACK (timestamps 丢包)
                 @ .................. *
                 @ <---- FIN -------- * tcp_orphan_retries
-                @ ----- RST -------> * LAST_ACK
+                @ ----- RST -------> * LAST_ACK (收到 RST 后进入CLOSED)
                 @ .................. * CLOSED
 tcp_syn_retries @ ----- SYN -------> * CLOSED
                   ..................

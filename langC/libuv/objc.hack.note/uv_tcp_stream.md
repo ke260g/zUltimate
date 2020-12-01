@@ -8,9 +8,18 @@
 4. libuv 的 tcp 用法
     1. server: uv_tcp_init, uv_tcp_bind, uv_listen(异步回调), uv_accept(同步的)
     2. client: uv_tcp_init, uv_tcp_connect(异步回调)
+5. libuv 的 fd  操作
+    1. 读: uv_read_start, uv_read_stop
+    2. 写: uv_write,
+    3. 关: uv_close, uv_shutdown
 
 # 1. uv_tcp_init
-1. 调用关系
+1. 主要业务
+    1. 系统调用 `socket()` 创建 fd
+    2. 赋值 uv__io_t 回调 uv__stream_io
+    3. 赋值 uv__io_t 的fd 刚刚创建的
+    4. 置空 uv__io_t 的 epoll 事件
+2. 调用关系
 ```js
 // note: w->cb 虽然 uv_tcp_init 赋值为 uv__stream_io
 //             但是 uv_tcp_listen 将被赋值为 uv__server_io (服务端)
@@ -54,9 +63,11 @@ uv_tcp_init() > uv_tcp_init_ex() {
     }
 }
 ```
-2. 主要业务: 创建了一个 fd, 初始化 uv_stream 对象
 
 # 2. uv_tcp_bind
+1. 主要业务
+    1. 系统调用 `bind()` 绑定监听的地址
+2. 调用关系
 ```js
 uv_tcp_bind(addr) > uv__tcp_bind(addr) {
     > maybe_new_socket(addr) {
@@ -77,6 +88,13 @@ uv_tcp_bind(addr) > uv__tcp_bind(addr) {
 ```
 
 # 3. uv_listen
+1. 主要业务
+    1. 系统调用 `listen()` 开启监听
+    2. 赋值 tcp 层的用户回调 connection_cb
+    3. 赋值 uv__io_t 层的回调 uv__server_io
+    4. 传递 uv__io_t 层的监听事件 POLLIN 到 pevents
+    5. 把 uv__io_t 对象加入 loop->watchers 和 loop->watcher_queue
+2. 调用关系
 ```js
 uv_listen() > uv_tcp_listen(stream, backlog, cb) {
     > maybe_new_socket(addr) {
@@ -102,13 +120,16 @@ uv_listen() > uv_tcp_listen(stream, backlog, cb) {
    并在 uv__io_poll 中使用 epoll_wait 监听事件
 
 # 4. uv_accept
+1. 主要业务 (server, client 都是 uv_tcp_t)
+    1. 把 server->accepted_fd 取出来, 构造一个 client 传出对象
+    2. 从 server->queued_fds 队列取出新的 accepted_fd 留作下次 uv_accept
+    3. 维护 server->queued_fds 队列, (异步accept返回的队列, 实际上是 epoll_wait 返回的)
+    4. 如果 server->queued_fds 为空了, 再次把 server->io_watcher.fd 加到
+       事件轮的监听队列中, 等待下次 uv_run 加入 epoll_wait 监听
+2. 调用关系
 ```js
-// 1. 把 server->accepted_fd 取出来, 构造一个 client 传出对象
-// 2. 从 server->queued_fds 队列取出新的 accepted_fd 留作下次 uv_accept
-// 3. 维护 server->queued_fds 队列, (异步accept返回的队列, 实际上是 epoll_wait 返回的)
-// 4. 如果 server->queued_fds 为空了, 再次把 server->io_watcher.fd 加到
-//    事件轮的监听队列中, 等待下次 uv_run 加入 epoll_wait 监听
 uv_accept(server/*传入*/, client/*传出*/) {
+    // 这里的 server, client  就是 uv_tcp_t
     >  uv__stream_open(stream = client, fd = server->accepted_fd) {
         // ... 错误检查; socket设置
         // 把传入的 fd, 传递给 uv_stream 对象;
@@ -146,8 +167,16 @@ uv_accept(server/*传入*/, client/*传出*/) {
 ```
 
 # 5. uv_tcp_connect
+1. 主要业务
+    1. 系统调用 `connect()` 传入连接地址
+    2. 构造 uv__req_t 对象并传递 tcp->connect_req
+    3. 传递用户回调 到 uv__req_t 对象
+    4. 传递 uv__io_t 层的监听事件 POLLOUT 到 pevents
+    5. 把 uv__io_t 对象加入 loop->watchers 和 loop->watcher_queue
+2. 调用关系
 ```js
 uv_tcp_connect(handle, addr, cb) > uv__tcp_connect(handle, addr, cb) {
+    // 这里的 handle 就是 uv_tcp_t
     > maybe_new_socket(addr) {
         // 这里 fd 已经创建了; 之前 uv_tcp_init 创建
         // #define uv__stream_fd(handle) ((handle)->io_watcher.fd)
@@ -178,8 +207,55 @@ uv_tcp_connect(handle, addr, cb) > uv__tcp_connect(handle, addr, cb) {
 # 6. uv_read_start uv_read_stop
 # 7. uv_write
 # 8. uv_shutdown
+# 9. uv_close
+
+# 11. uv_tcp_t
+```c++
+struct uv_tcp_t {
+// UV_HANDLE_FIELDS
+    uv_loop_t* loop;     // 事件轮
+    uv_handle_type type; // 多态标记
+    int fd; // 1. tcp 服务端 listen 的fd
+            // 2. tcp 服务端 accept 的fd, 即完成三次握手的连接
+            // 3. tcp 客户端 connect 的fd
+
+// UV_STREAM_FIELDS
+    uv_connect_t *connect_req;      // 连接请求; 内有 用户回调 (uv_tcp_connect)
+    uv_shutdown_t *shutdown_req;    // 关闭请求; 内有 用户回调 (uv_shutdown)
+    uv__io_t io_watcher;            // stream 层对象
+    void* write_queue[2];
+    void* write_completed_queue[2];
+    uv_connection_cb connection_cb; // 建立连接; 指向 用户回调 (uv_tcp_listen)
+    int delayed_error;
+    int accepted_fd;             // 最早 accept 用户还没处理的 fd (可以认为是变长数组的头)
+    void* queued_fds;            // 后续 accept 用户还没处理的 fd (变长数组)
+}
+```
+# 12. uv__io_t
+```c++
+struct uv__io_t {
+    uv__io_cb cb; // uv__io 层的回调
+                  // 1. tcp 统一地 uv_tcp_init   初始化 uv__stream_io
+                  // 2. tcp 服务端 uv_tcp_listen 重写为 uv__server_io
+                  // 3. tcp 其他操作 uv_accept, uv_connect, uv_read, uv_write
+                  //        统一继承 uv__stream_io
+    void* pending_queue[2];
+    void* watcher_queue[2]; // 连接 loop->watcher_queue 事件轮的队列
+    unsigned int pevents; // 还没通知内核 epoll 的事件
+                          // POLLOUT: uv_tcp_connect
+                          // POLLIN:  uv_tcp_listen
+    unsigned int events;  // 已经通知内核 epoll 的事件
+    int fd;       // 因为 uv_run 操作的是 uv__io 层
+                  // 所以 要把 uv_tcp_t 的 fd 复制一份到这里来
+};
+```
+
 
 # 91. uv__io_start (io对象 新增事件 and 入列 loop->watcher_queue)
+1. 主要业务
+    1. 传递 events 参数到 uv__io_t 对象的 pevents
+    2. 把 uv__io_t 对象加入到 watcher_queue 和 watchers
+2. 调用关系
 ```js
 uv__io_start(w = &handle->io_watcher, events) {
     // ...
@@ -196,6 +272,9 @@ uv__io_start(w = &handle->io_watcher, events) {
 }
 ```
 # 92. uv__io_stop (io对象, 删除事件 and 出列 loop->watcher_queue)
+1. 主要业务
+    1. 干掉 uv__io_t 对象的 pevents 中的指定事件
+    2. 如果没有事件, 销毁 
 ```js
 uv__io_stop(w = &handle->io_watcher, events) {
     // ...

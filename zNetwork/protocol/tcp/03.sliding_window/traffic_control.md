@@ -46,7 +46,7 @@
 1. 限制发包条件; 当满足下列两个条件之一才能发包
     1. `buffer-size > mss or window-size > mss` 才发送
     2. 收到之前已发送数据的 ack (这是为了 配合接收方关闭窗口-不发 ack, 也是为了取得mss)
-2. Nagle 算法 旧版本的内核默认打开; 没有sysctl 参数控制
+2. Nagle 算法 旧版本的内核默认打开; 没有 sysctl 参数控制
     1. 新版本内核已经关闭了
 3. socket 开关 Nagle 算法
 ```c++

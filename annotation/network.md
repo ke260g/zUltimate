@@ -1,3 +1,16 @@
+## close 和 shutdown 的区别
+https://blog.csdn.net/justlinux2010/article/details/20913755
+1. close 是文件系统层的关闭
+    + 单个进程close一个fd后不保证马上释放连接
+    + 当fd在内核中的引用数为0才会释放连接
+2. shutdown 直接对socket层的关闭 (不处理引用计数) (不能shutdown非socket的fd)
+    + 调用后; 其他进程占有这个连接的fd; read返回EOF; write可能触发SIGPIPE(buffer满了)
+    + 对于处于 TCP_CLOSE 状态的socket 会返回 ENOTCONN错误
+3. shutdown 可以选择性 只关闭读 or 只关闭写 or 同时关闭读写
+    + 但 close 必须同时关闭读写方向
+4. shutdown只关闭socket不释放fd; 所以进程也要调用close释放fd
+    + 但 close 释放fd 释放socket
+
 ## Q: epoll poll select 的区别
 https://blog.csdn.net/qq_33436509/article/details/81946968
 1. fd个数; select 最大1024; epoll 和 poll 没有限制
@@ -12,12 +25,6 @@ https://blog.csdn.net/qq_33436509/article/details/81946968
     1. select 每次返回都要遍历一整个数组 检查fd_set 是否有事件发生
     2. poll   每次返回都要遍历一整个数组 检查revents是否有事件发生
     3. epoll  返回的就是有事件的fd集合 不需要做额外的检查
-
-## Q: shutdown / close  的区别
-1. shutdown()函数可以选择关闭全双工连接的读通道或者写通道，如果两个通道同时关闭，则这个连接不能再继续通信。
-2. close()函数会同时关闭全双工连接的读写通道，除了关闭连接外，还会释放套接字占用的文件描述符
-3. shutdown()只会关闭连接，但是不会释放占用的文件描述符。
-4. 所以即使使用了SHUT_RDWR类型调用shutdown()关闭连接的读写通道，也要close()来释放的文件描述符
 
 ## Q: shutdown 关闭读写方向的区别
 1. shutdown(SHUT_RD) 读方向
@@ -56,6 +63,7 @@ https://blog.csdn.net/qq_33436509/article/details/81946968
 滑动窗口大小的范围
 
 ## Q: tcp 的 seq 号是如何确定
+随时间叠加值 + 随机(4元祖)
 
 ## Q: 一个连接有多少个参数唯一确定?
 1. 协议号 tcp/ udp

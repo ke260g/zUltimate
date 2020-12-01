@@ -1,7 +1,8 @@
 # tcp 三次握手 半连接队列 和 全连接队列
 参考 https://www.cnblogs.com/xiaolincoding/p/12995358.html
-1. 半连接队列, listen 中内核已发发送 syn+ack 的队列, 也称 syn 队列 ( `ss -tnpl` 的 Recv-Q 列)
-2. 全连接队列, listen 中内核已完成三次握手但没有 accept 的队列, 也称 accepet 队列 (`ss -tnp state syn-recv`)
+1. 半连接队列, listen 中内核已发送二次握手的队列, 也称 syn 队列 (`ss -tnp state syn-recv`)
+2. 全连接队列, listen 中内核已完成三次握手但没有 accept 的队列, 也称 accepet 队列 ( `ss -tnpl` LISTEN 的 Recv-Q 列)
+3. 实际上, 半连接队列, 对于服务端用户态程序而言, 是透明的
 
 ## 调试
 1. 查看半连接队列
@@ -46,12 +47,11 @@ SYSCALL_DEFINE2(listen, int, fd, int, backlog) {
     int somaxconn;
     if (sock) {
         somaxconn = sock_net(sock->sk)->core.sysctl_somaxconn;
-        if ((unsigned int)backlog > somaxconn)
-            backlog = somaxconn;
+        if ((unsigned int)backlog > somaxconn) // somaxconn 即 /proc/sys/net/core/somaxconn
+            backlog = somaxconn;               // backlog 即 listen 的第二个参数 
         err = security_socket_listen(sock, backlog);
         if (!err) 
-            err = sock->ops->listen(sock, backlog); // inet_stream_ops .listen = inet_listen;
-    }
+            err = sock->ops->listen(sock, backlog); // inet_stream_ops { .listen = inet_listen, }
 }
 int inet_listen(struct socket *sock, int backlog) {
     // ...
@@ -75,7 +75,7 @@ bool sk_acceptq_is_full(const struct sock *sk) {
 // 4.1 半连接队列满了
 // 4.2 全连接队列满了
 // 4.3 没有开启 syncookies 时; 超过 sysctl_max_syn_backlog 的 3/4
-//     即开启 tcp_syncookies 能扩容半连接队列(上线 仍然是 理论大小, 也受全连接队列限制)
+//     即开启 tcp_syncookies 能扩容半连接队列(上限 仍然是 理论大小, 也受全连接队列限制)
 int reqsk_queue_is_full(const struct request_sock_queue *queue) {
     return queue->listen_opt->qlen >> queue->listen_opt->max_qlen_log;
 }

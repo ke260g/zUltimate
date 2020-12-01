@@ -8,7 +8,7 @@
 ## 1.2. 后序建立连接的流程 (cookie 有效) (比如一次 http 的 get/post 请求)
 1. client 发送 { cookie + syn + data } 的报文到服务端
 2. server 检验 cookie
-3. server 返回 syn+ack, ack 包含data部分(指示client 发送窗口移动)
+3. server 返回 syn+ack, ack包含data部分的偏移 (指示client 发送窗口移动)
 4. 且服务端进程 listen + recv 得到data
 5. 服务端后序处理并返回 响应内容到客户端
 

@@ -2,37 +2,32 @@
 # 1. 对象定义 typedef struct uv_loop_s uv_loop_t 
 ```c++
 struct uv_loop_s {
-  /* User data - use this for whatever. */
-  void* data;
-  /* Loop reference counting. */
-  unsigned int active_handles;
-  void* handle_queue[2];
-  union {
-    void* unused;
-    unsigned int count;
-  } active_reqs;
-  /* Internal storage for future extensions. */
-  void* internal_fields;
-  /* Internal flag to signal loop stop. */
-  unsigned int stop_flag;
-  UV_LOOP_PRIVATE_FIELDS
+  void* data;     // 用户句柄
+// UV_LOOP_PRIVATE_FIELDS
+  int backend_fd; // epoll_create 返回的 fd
+
+  void* pending_queue[2];
+  void* watcher_queue[2]; // tcp, udp 连接的 uv__io_t 对象队列
+  uv__io_t** watchers;    // watcher_queue 的 fd 索引, 即 watchers[fd] 为一个 uv__io_t 指针
+                          //   a) 这里的 fd 就是 epoll_ctl 加入到 backend_fd 
+                          //   b) 也是 epoll_wait 传出的 fd
+                          // 这样设计的理由是:
+                          //   1) 当某个回调中销毁掉了 tcp/udp/uv__io_t 对象, 此时 watchers[fd] 就会销毁,
+                          //   2) 但是, 销毁是异步进行的, 即底层 epoll_ctl 退出 backend_fd 延时到 uv_run
+                          //   3) 所以, 当 epoll_wait 返回fd, 但 watchers[fd] 为空, 才 epoll_ctl 进行退出
+  unsigned int nwatchers; // watchers 变长数组的大小
+  unsigned int nfds;      // 有效 fd 的个数 (watchers 中的有效fd个数)
+
+  struct {        // 定时器 变长数组
+    void* min;
+    unsigned int nelts;
+  } timer_heap;
+
+  void* prepare_handles[2]; // uv_prepare_t 队列; 双成员数组实现链表
+  void* check_handles[2];   // uv_check_t 队列; 双成员数组实现链表
+  void* idle_handles[2];    // uv_idle_t 队列; 双成员数组实现链表
 };
 typedef struct uv_loop_s uv_loop_t;
-
-/**
- * @brief UV_LOOP_PRIVATE_FIELDS 包含了主要功能的容器
- * @timer_heap: 定时器
- * @prepare_handles: uv_prepare_t 队列; 双成员数组实现链表
- * @idle_handles: uv_idle_t 队列; 双成员数组实现链表
- */
-#define UV_LOOP_PRIVATE_FIELDS \
-  void* prepare_handles[2];                                                   \
-  void* idle_handles[2];                                                      \
-  struct {                                                                    \
-    void* min;                                                                \
-    unsigned int nelts;                                                       \
-  } timer_heap;                                                               \
-
 ```
 
 # 2. 对象获取 uv_default_loop uv_loop_new

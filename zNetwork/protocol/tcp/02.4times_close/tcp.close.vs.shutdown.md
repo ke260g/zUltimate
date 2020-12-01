@@ -7,6 +7,7 @@ https://blog.csdn.net/justlinux2010/article/details/20913755
 2. shutdown 直接对socket层的关闭 (不处理引用计数) (不能shutdown非socket的fd)
     + 调用后; 其他进程占有这个连接的fd; read返回EOF; write可能触发SIGPIPE(buffer满了)
     + 对于处于 TCP_CLOSE 状态的socket 会返回 ENOTCONN错误
+    + fork 继承了 fd 的进程, 将无法使用该 fd
 3. shutdown 可以选择性 只关闭读 or 只关闭写 or 同时关闭读写
     + 但 close 必须同时关闭读写方向
 4. shutdown只关闭socket不释放fd; 所以进程也要调用close释放fd
