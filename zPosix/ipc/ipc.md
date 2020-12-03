@@ -10,7 +10,6 @@ man 7 mq_overview
 key_t ftok(const char *pathname, int proj_id);  // 输入pathname; 输出 ipc 的 key (uuid)
 ```
 
-
 # userspace utils
 ## ipcs  (show)
 1. 显示 ipc 资源的 key_t, id(msqid / shmid / semid), 拥有者, 权限, 以及

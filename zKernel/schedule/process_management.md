@@ -115,21 +115,38 @@ mm_release() { // 子进程软中断 exec() or exit()
 2. 线程创建  `do_fork()` flags 为: `CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD` 等
     + 从而; 子进程与父进程共享 地址空间(VM) 文件系统资源(FS) fd表(FILES) 信号回调(SIGHAND) 线程组(CLONE_THREAD)
     ```c++
-    copy_process() { // 根据 CLONE_THREAD, 继承 tgid
-        /* ok, now we should be set up.. */
+    copy_process() {
+        // 复制 一份当前进程的 task_struct
+        // 底层 arch_dup_task_struct() 直接 *tsk = *current;
+        p = dup_task_struct(current);
+
+        // 新的 pid
         p->pid = pid_nr(pid);
-        if (clone_flags & CLONE_THREAD) {
-            p->exit_signal = -1;
-            p->group_leader = current->group_leader;
-            p->tgid = current->tgid;
-        } else {
-            if (clone_flags & CLONE_PARENT)
-                p->exit_signal = current->group_leader->exit_signal;
-            else
-                p->exit_signal = (clone_flags & CSIGNAL);
-            p->group_leader = p;
-            p->tgid = p->pid;
+
+        // 如果是线程, CLONE_THREAD, 继承 tgid
+        // 否则是进程, tgid 就是 pid
+        if (clone_flags & CLONE_THREAD) { 
+            // ...
+            p->tgid = current->tgid; // 继承
+        } else {                         
+            // ...
+            p->tgid = p->pid;        // 自己
         }
+        // 如果是线程, CLONE_FILES, 增加 current->files 的引用计数
+        // 否则 dup_fd(current->files);
+        copy_files(clone_flags, p);
+        
+        // 如果是线程, CLONE_FS，增加 current->fs 的引用计数;
+        // 否则 copy_fs_struct(current->fs);
+        copy_fs(clone_flags, p);
+        
+        // 如果是线程, CLONE_VM, 增加 current->mm 的引用计数;
+        // 否则 dup_mm(stk);
+        copy_mm(clone_flags, p);
+        
+        // 如果是线程, CLONE_SIGHAND, 增加 current->sighand 的引用计数
+        // 否则 kmem_cache_alloc 重新分配一份
+        copy_sighand(clone_flags, p);
     }
     ```
 3. 对比:  进程创建 `do_fork()` flags 为: `CLONE_SIGCHLD`
@@ -137,7 +154,7 @@ mm_release() { // 子进程软中断 exec() or exit()
 
 ### 1.4.2 内核线程 (create_kthread => kernel_thread => do_fork)
 1. 内核线程的本质也是一个进程`task_struct`
-    + 但没有地址空间映射 `task_struct->mm = NULL;`
+    + 但没有地址空间映射 `task_struct->mm = NULL;`; 因为不用换页
 2. 通过 `do_fork` 创建 flags 为 ` CLONE_VM | CLONE_FS | CLONE_FILES | SIGCHLD `
 3. 通过 `do_exit` 自行退出
 4. 通过 `kthread_stop()` 停止

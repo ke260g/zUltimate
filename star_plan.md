@@ -1,4 +1,5 @@
 [TOC]
+星辰计划
 master in linuxC, ipc-programming, network-programming, system-programming
 wellin    kernel-module; network_device; interrupt; memory mapping & dma;
           netlink; bridge_forward; netfilter;
@@ -40,7 +41,9 @@ if (inet_confirm_dst_addr(in_dev, sip)) {
 # 4. posix
 /proc/loadavg 了解一下
 http://www.brendangregg.com/linuxperf.html
-
+mount -t proc proc /proc
+linker and loaders, elf 文件, exec 族的底层实现
+man 2 prctl
 # 5. libuv
 # 6. redis
 # 7. tools
