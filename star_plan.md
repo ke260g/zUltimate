@@ -14,6 +14,10 @@ stl 源码 (候捷)
 硬中断, 实际上是 cpu 异常的一种类型
 还有 取指令异常, 后者为数据异常, 等, 
 内核 会有 SIGSEGV,  缺页, MMU访问权限异常
+
+1. ldd3 原文
+    http://lwn.net/Kernel/LDD3/
+    http://lwn.net/images/pdf/LDD3/ldd3_pdf.tar.bz2
 # 3. network
 http://www.embeddedlinux.org.cn/linux_net/
 协议栈的 scope 和 net_namespace 分别是什么意思 ??
