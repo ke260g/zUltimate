@@ -283,7 +283,7 @@ void uv__io_poll(uv_loop_t* loop, int timeout) {
   // 4. 遍历 events
   // 4.1 如果 events->fd 已经不在 loop->watchers[fd] 中 (可能是其他业务干掉的)
   //    则把 fd 从 loop->backend_fd 干掉 epoll_ctl(EPOLL_CTL_DEL)
-  // 4.2 events->fd &= w->events, 即只关注上层 watcher 关注的事件
+  // 4.2 pe->events &= w->events, 即只关注上层 watcher 关注的事件
   // 4.3 如果有事件 a) 信号事件 则 拉起标记 b) 其他事件 则 执行回调
   // 5. 如果有信号事件, 之前遍历 events 被拉起标记
   //    则执行 信号回调 signal_io_watcher.cb

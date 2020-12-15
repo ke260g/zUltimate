@@ -28,6 +28,5 @@ void sort_count(vector<int> &a) {
     }
 
     // 5. 将排序好的数据赋值给a[]
-    for (int i = 0; i < a.size(); i++)      
-        a[i] = b[i];
+    a.assign(b.begin(), b.end());
 }

@@ -45,55 +45,92 @@ Linking View                             Execution View
 + 所以有个 section <-> segment 的映射关系; `readelf | grep "Section to Segment mapping"`
 
 ## 1.3 section
-| name      | sh_type      | sh_flags | functionality |
-| :--       | :--          | :--      | :--           |
-| .bss      | SHT_NOBITS   | SHF_ALLOC SHF_WRITE | 全局非初始化变量; 不占用elf空间 |
-| .data     | SHT_PROGBITS | SHF_ALLOC SHF_WRITE | 进程的初始化数据 |
-| .rodata   | SHT_PROGBITS | SHF_ALLOC | 进程的只读数据 |
-| .text     | SHT_PROGBITS | SHF_ALLOC SHF_EXECINSTR | 大部分机械码 |
-| .init     | SHT_PROGBITS | SHF_ALLOC SHF_EXECINSTR | `__attribute__((constructor))` |
-| .fini     | SHT_PROGBITS | SHF_ALLOC SHF_EXECINSTR | `__attribute__((destructor))`; atexit() |
-| .got      | SHT_PROGBITS || global offset table |
-| .plt      | SHT_PROGBITS || procedure linkage table |
-| .interp   | SHT_PROGBITS | | 解析器的路径 |
-| .line     | SHT_PROGBITS | | 用于gdb; 机械码对应的行号 |
-| .debug    | SHT_PROGBITS | | 用于gdb; 调试符号信息 |
-| .comment  | SHT_PROGBITS | | 版本信息 |
-| .dynamic  | SHT_DYNAMIC  ||动态链接-信息|
-| .dynstr   | SHT_STRTAB   | SHF_ALLOC | 动态链接-字符串信息(指示符号表) |
-| .dynsym   | SHT_DYNSYM   | SHF_ALLOC | 动态链接-符号表 |
-| .hash     | SHT_HASH     | SHF_ALLOC | symbol 哈希表 |
-| .note     | SHT_NOTE     | | ?? |
-| .rel.X    | SHT_REL      |  | 用以重定向 |
-| .rela.X   | SHT_RELA     | | 用以重定向 |
-| .shstrtab | SHT_STRTAB   | | section's name |
-| .strtab   | SHT_STRTAB   || 与symtab关联的字符串 |
-| .symtab   | SHT_SYMTAB   || 符号表 |
+| name         | sh_type      | sh_flags | functionality |
+| :--          | :--          | :--      | :--           |
+| .bss         | SHT_NOBITS   | SHF_ALLOC SHF_WRITE | 初始化为零的变量; 不占用elf空间 |
+| .data        | SHT_PROGBITS | SHF_ALLOC SHF_WRITE | 需要初始化的数据; |
+| .rodata      | SHT_PROGBITS | SHF_ALLOC | 只读数据, const 变量, 匿名字符串 |
+| .text        | SHT_PROGBITS | SHF_ALLOC SHF_EXECINSTR | 大部分机械码 |
+| .init        | SHT_PROGBITS | SHF_ALLOC SHF_EXECINSTR | `__attribute__((constructor))` |
+| .fini        | SHT_PROGBITS | SHF_ALLOC SHF_EXECINSTR | `__attribute__((destructor))`; atexit() |
+| .got         | SHT_PROGBITS || global offset table |
+| .plt         | SHT_PROGBITS || procedure linkage table |
+| .got.plt     | SHT_PROGBITS |||
+| .interp      | SHT_PROGBITS | | 解析器的路径字符串; 如 /lib64/ld-linux-x86-64.so.2 |
+| .comment     | SHT_PROGBITS | | 版本信息 |
+| .dynamic     | SHT_DYNAMIC  | | 动态链接-信息|
 
-.got.plt
-.rela.dyn / .rela.plt /  .rela.rodata
+| .note        | SHT_NOTE     |  | ?? |
+| .rel.X       | SHT_REL      |  | 用以重定向 |
+| .rela.X      | SHT_RELA     |  | 用以重定向 |
+| .rela.text   | SHT_RELA     |  |  .text  的重定向信息 |
+| .rela.data   | SHT_RELA     |  |  .data  的重定向信息 |
+| .rela.rodata | SHT_RELA     |  | .rodata 的重定向信息 |
+| .rela.dyn    | SHT_RELA     |  | 用以重定向 |
+| .rela.plt    | SHT_RELA     |  | 用以重定向 |
+| .shstrtab    | SHT_STRTAB   |  | 字符串表; section's name |
+| .strtab      | SHT_STRTAB   |  | 字符串表; .symtab entry's name |
+| .symtab      | SHT_SYMTAB   |  | 普通链接的符号表 |
+| .dynstr      | SHT_STRTAB   | SHF_ALLOC | 动态链接-字符串信息(指示符号表) |
+| .dynsym      | SHT_DYNSYM   | SHF_ALLOC | 动态链接-符号表 |
+| .hash        | SHT_HASH     | SHF_ALLOC | 运行时的符号哈希表 |
+| .line        | SHT_PROGBITS |  | 用于gdb; 机械码对应的行号 |
+| .debug       | SHT_PROGBITS |  | 用于gdb; 调试符号信息 |
+| .debug_aranges | SHT_PROGBITS | | |
+| .debug_info    | SHT_PROGBITS | | |
+| .debug_abbrev  | SHT_PROGBITS | | |
+| .debug_line    | SHT_PROGBITS | | |
+| .debug_frame   | SHT_PROGBITS | | |
+| .debug_str     | SHT_PROGBITS | | |
+| .debug_loc     | SHT_PROGBITS | | |
+| .debug_ranges  | SHT_PROGBITS | | |
+| .jcr       | ||
 
-## 1.4 segment 类型
-.PHDR
-.INTERP
-.load
-.dynamic
-.note
-.GNU_STACK
-.GNU_RELRO
+1. .symtab 对比 .dynsym
+    1. .symtab 在  .o / .so  中, 作用于链接阶段
+    2. .dynsym 在 .so / .exe 中, 用于运行时动态链接, 加载到进程空间中
+2. .rel 对比 .rela
+    1. .rel  : 原始代码中存放基础地址, 重定向时, 加上重定向-项中的 value
+    2. .rela : 原始代码中符号地址为零, 重定向时, 替换重定向-项中的 value (a 是 absolute 的意思??)
+3. .hash 对比 .dynsym
+4. { .shstrtab, .strtab } 对比 .dynstr
+    1. { .shstrtab, .strtab } 作用于 链接阶段
+    2. .dynstr 作用于 动态链接阶段, 加载到进程空间中
+
+## 1.4 segment
+1. .PHDR
+2. .INTERP
+    + .interp
+3. .LOAD
+    + .interp .note.ABI-tag .note.gnu.build-id .gnu.hash .gnu.version .gnu.version_r
+    + .dynsym .dynstr .rela.dyn
+    + .init .plt .plt.got .text .fini .rodata
+    + .eh_frame_hdr .eh_frame
+    + .init_array .fini_array .jcr .dynamic .got .data .bss
+4. .DYNAMIC
+    + .dynamic
+5. .NOTE
+    + .note.ABI-tag .note.gnu.build-id
+6. .GNU_EH_FRAME
+    + .eh_frame_hdr
+7. .GNU_STACK
+8. .GNU_RELRO
+    + .init_array .fini_array .jcr .dynamic .got
 
 # 2 Elf Header
+```c++
+#include <elf.h>
+struct ElfN_Ehdr;
+struct Elf32_Phdr; // program header
+struct Elf32_Shdr; // section header
+```
+
 # 3 Section Header (section 的 类型定义)
 ```c++
-/**
- * @sh_name:  name (如 .text/.data/.bss)
- * @sh_flags: 权限 (写/申请/执行; 默认自带 读)
- * @sh_type:
- */
 typedef struct {
-    uint32_t   sh_name;
-    uint32_t   sh_type;
-    uint32_t   sh_flags;
+    uint32_t   sh_name;       // name (如 .text/.data/.bss)
+    uint32_t   sh_type;       // 类型 (如 符号表; 字符串表; ) 
+    uint32_t   sh_flags;      // 权限 (写/申请/执行; 默认自带 读)
     Elf32_Addr sh_addr;
     Elf32_Off  sh_offset;
     uint32_t   sh_size;
@@ -119,7 +156,7 @@ typedef struct {
 
 ## 3.3 sh_type (section header type)
 + SHT_NULL                : indicates a inactive entry
-+ SHT_PROGBITS            : executable code
++ SHT_PROGBITS            : code, data, and debugger info.
 + SHT_SYMTAB SHT_DYNSYM   : symbol table                          (only one)
 + SHT_STRTAB              : string table                          (multiple)
 + SHT_RELA                : relocation with explicit addends      (multiple)
@@ -127,16 +164,14 @@ typedef struct {
 + SHT_DYNAMIC             : dynamic linking infomation            (only one)
 + SHT_NOTE                : 
 + SHT_NOBITS              : occupies no space in elf; but need for execuation
-    + 正是因为这类型的 .section 导致 Elf32_Phdr->p_memsz > Elf32_Phdr->p_filesz
+    + 正是因为这类型的 .section 导致 `Elf32_Phdr->p_memsz` 大于 `Elf32_Phdr->p_filesz`
 + SHT_REL                 : relocation without explicit addends   (multiple)
 + SHT_SHLIB               : reverse
 + SHT_LOPROC SHT_HIPROC   :
 + SHT_LOUSER
 + SHT_HIUSER
 
-
-
-# 3. String Table (.synstr)
+# 3. String Table ( .shstrtab / .synstr / .dynstr )
 1. 就是以 null 终止的字符串序列; 形同 `char *s[]`;
 2. 用以指示elf文件中的字符串, 索引方式为 .synstr section 的偏移值
 3. 引用实例:
@@ -152,19 +187,16 @@ typedef struct {
     + 即 ELF32_ST_INFO(STB_LOCAL, STT_NOTYPE
 ## 4.1 定义 struct Elf32_Sym
 ```c++
-/**
- * @st_name:  name (外引用变量/函数/)
- */
 typedef struct {
-    uint32_t      st_name;
-    Elf32_Addr    st_value;
-    uint32_t      st_size;
-    unsigned char st_info;
+    uint32_t      st_name;  // 变量名 or 函数名; 字符串表(`.symtab' or `.dynsym')的中的偏移;
+    Elf32_Addr    st_value; // exe
+    uint32_t      st_size;  // 重定向对象的大小
+    unsigned char st_info;  // 重定向的属性 和 类型
     unsigned char st_other; // reverse
     uint16_t      st_shndx; // 该符号关联的 section header index
 } Elf32_Sym;
-#define ELF32_ST_BIND(info)       // get bind (属性)
-#define ELF32_ST_TYPE(info)       // get type (类型)
+#define ELF32_ST_BIND(Elf32_Sym->st_info) // get bind (属性)
+#define ELF32_ST_TYPE(Elf32_Sym->st_info) // get type (类型)
 ```
 ## 4.2 Elf32_Sym->st_info (属性 和 类型)
 ### 4.2.1 Elf32_Sym->st_info->ELF32_ST_BIND 属性
@@ -173,6 +205,9 @@ typedef struct {
 #define STB_GLOBAL 1 // 所有elf文件共享; st_info->name 链接时全局唯一
 #define STB_WEAK   2 // 低优先级的 STB_GLOBAL; 链接时可以不唯一
 ```
+1. 如果 STB_WEAK 的符号在本地没有定义, 则链接时查找全局的定义, 并引用
+2. 如果 链接时还是找不到 STB_WEAK 的符号定义, 则符号值为零, 且链接正常
+
 + 如果 global 变量类型 和 local变量冲突; 在进程镜像中, 内核如何处理???
     + 能否编译通过??
 + STB_WEAK 和 STB_GLOBAL 的区别
@@ -183,7 +218,7 @@ typedef struct {
     5. STB_LOCAL 排列在 STB_GLOBAL STB_WEAK的前面; Elf32_Shdr->sh_info 指示 last STB_LOCAL 的
     6. 因此, 符号表构建时; 优先构建 STB_LOCAL; 再构建 STB_GLOBAL / STB_WEAK
 + STB_WEAK 的 使用场景??
-    1. ??
+    + 
 ### 4.2.2 Elf32_Sym->st_info->ELF32_ST_TYPE 类型
 ```c++
 #define STT_NOTYPE  0
@@ -225,12 +260,8 @@ typedef struct {
     1. .symtab(由sh_info指示)
     2. 将要修改的 section (由 sh_link 指示)
 ## 5.1  定义 Elf32_Rel Elf32_Rela
++ 只讨论 Rela
 ```c++
-typedef struct elf32_rel {
-  Elf32_Addr    r_offset; 
-  Elf32_Word    r_info;
-} Elf32_Rel;
-
 /**
  * @r_offset: 重定向前: 符号所在section的bytes偏移; 重定向后: 符号的虚拟地址
  * @r_info:   关联符号在符号表的索引 & 重定向的类型(指示 如果使用 r_offset 进行计算)
@@ -280,17 +311,6 @@ R_386_COPY:     (用于动态链接); 指向可写segment; 关联符号同时存
 R_386_GLOB_DAT: 指向 GOT 的一个表项
 R_386_JMP_SLOT: (用于动态链接); 指向 PLT 的一个表项
 R_386_RELATIVE: (用于动态链接); ELF32_R_SYM 必须是0; r_offset 指向 .so 的相对地址
-
-
-# elf header
-```c++
-#include <elf.h>
-struct ElfN_Ehdr;
-struct Elf32_Phdr; // program header
-struct Elf32_Shdr; // section header
-
-```
-
 
 # Program header
 ## 定义

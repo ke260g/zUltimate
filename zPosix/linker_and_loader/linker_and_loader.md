@@ -1,47 +1,60 @@
 https://linker.iecc.com/
 https://wh0rd.org/books/linkers-and-loaders-1.tar.lzma
 
-precompile > compile > assemble > link
-预编译 > 编译 > 汇编 > 链接
-其中每个流程, 都是要走两遍的, two pass
-
 1. 链接 和 加载 流程的关键阶段
 2. 这些流程中涉及到的关键的对象
 3. 这些对象, 在这些阶段中 又有什么关联
 
-# Q: 不同符 的 地址绑定 时机
-1. .so: 程序加载时, 连同程序一起绑定; 甚至 在符号首次被 调用时绑定
-2. .o: 链接时绑定
-3. .exe:  运行时绑定
-4. dlopen: 使得 .so 的符号地址, 在程序运行时绑定
 
-# chapter 01 
-+ 功能1: 地址绑定: 具象地址 与 抽象地址的绑定
-Input:  具象地址: 函数printf, 变量a
-Output: 抽象地址: .text 段的偏移 1000bytes, .data 段的偏移 1000bytes
+理解 .o, .exe / .so 文件的格式, struct 定义,
+    有哪些 segment, 分别又有什么作用
+理解 .o 文件如何被解析的,
+    ld 读取后, 构造了什么全局对象, 这些全局对象如何交互?
+    这些全局对象 中间 经历了哪些 关键的流程, 最终如何产出 .exe / .so
+理解 .exe / .so 如何被解析的
+    exec 读取后, 构造了什么全局对象, 这些全局对象如何交互?
+    这些全局对象 中间 经历了哪些 关键的流程, 最终如何加载到 内存中的?
 
-+ 功能2: 重定向:
-    1. 使得 共享库 在编码时, 可以以 0地址 作为起始地址, 而不是提前确定偏移
-       且在运行时, 起始地址改变, 机械码访问变量时以 起始地址 的偏移寻址
-    2. 使得 调用者 在编码时, 可以以 库符号 调用共享库的 函数,
-       且在运行时, 可以自动地找到 共享库中符号的地址
+链接 和 加载 底层是两个"重定向"过程
 
-历史: 
-1. 无 汇编器: 直接使用机械码, 即编码时确定函数与变量地址.
-    + 问题本质: 过早绑定地址, 导致修改的工作量大
-2. 有 汇编器: 函数地址用 label 表示, 最后在整体汇编时, 计算地址
-    + 延迟函数地址的绑定
-3. 函数库: 子函数库的使用以及出现, 比汇编器还要早
-    + 这里的函数库, 相当于现在的 .o, .a
-4. 函数库: 底层需要 ld 实现的两个    功能:  重定向 和 库查找
-    1. .o 编码时, 其实地址以 0地址为准
-    2. 最后链接为整体程序时, 重新计算偏移, 
+1. chapter 01 编译流程的简介
+    1. (ignore) linker and loader 发展历史
+    2. (ignore) linker 的传参方式 4 种
+2. chapter 02 一些 CPU 架构的细节讨论
+3. chapter 03 object file 的理论设计
+    + 即 elf 文件各 struct 的理论推导
 
-## linkder and loader 的三个主要业务
-1. loading: disk 中的 elf 文件, 拷贝到内存中的过程, (loader)
-   其中涉及, 申请虚拟内存, 实际内存, 设置内存页权限 的过程
-2. relocation: (linder and loader)
-   1. 链接阶段: 每个 .o, .so 都是以 零地址开始的, 编译成一个exe时需要重定向
-   2. 运行阶段: .exe 是从零地址开始的, 但分页分段使得每段 段首地址 要求重新确定
-3. symbol resolution: (linker)
-   .o, .so 间通过"符号"进行调用, 链接阶段需要把这些符号, 解析为地址
+加载流程:
+1. .text 先查找一下是否已经映射了, 如果那就创建虚拟内存映射过去,
+         否则创建虚拟内存后, 加载
+2. .data 申请并映射, 然后内核根 elf 文件内存对这块内存初始化
+3. .bss  申请并映射, 且初始化为0, 这部分在 elf 文件中只有大小说明
+4. stack 初始化一个栈的大小(最小的栈 是多少?)
+5. heap  堆内存是不会提前初始化; 写一个没有malloc的程序即可验证
+
+
+section 是 linker 去解析的
+segment 是 loader 去解析的
+segment 包含若干个 section
+
+
+将要研究的结构
+cat /usr/include/elf.h  | grep "Elf32_[a-zA-Z]*;"
+Elf32_Ehdr;
+Elf32_Shdr;
+Elf32_Chdr;
+Elf32_Sym;
+Elf32_Syminfo;
+Elf32_Rel;
+Elf32_Rela;
+Elf32_Phdr;
+Elf32_Dyn;
+Elf32_Verdef;
+Elf32_Verdaux;
+Elf32_Verneed;
+Elf32_Vernaux;
+Elf32_Nhdr;
+Elf32_Move;
+Elf32_gptab;
+Elf32_RegInfo;
+Elf32_Lib;
