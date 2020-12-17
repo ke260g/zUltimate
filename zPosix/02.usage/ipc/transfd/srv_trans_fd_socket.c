@@ -10,9 +10,9 @@ int send_fd(int fd, int fd_to_send)
     char             buf[2];    /* send_fd()/recv_fd() 2-byte protocol */
 
     iov[0].iov_base     = buf;
-    iov[0].iov_len      = 2;
+    iov[0].iov_len      = sizeof(buf)/sizeof(*buf);
     msg.msg_iov         = iov;
-    msg.msg_iovlen      = 1;
+    msg.msg_iovlen      = sizeof(iov)/sizeof(*iov);
     msg.msg_name        = NULL;
     msg.msg_namelen     = 0;
 

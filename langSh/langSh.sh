@@ -40,3 +40,36 @@ if [ 2 -gt 1 ]; then echo yes; fi
 if [ $((4 / 2)) -gt 1 ]; then echo yes; fi
 if [ 2048 -ne 1024 ]; then echo yes; fi
 # 数值比较 ---------------------------------
+
+# 字符串比较 -------------------------------
+# 1. 空字符串
+s=""
+if [ -z $s ]; then string is empty; fi 
+s="string"
+# 2. 非空字符串
+if [ -n $s ]; then string is not empty; fi
+
+# 3. 字符串比较, 不能使用 -eq, -ne, 因为这两个只能用于 整形数值
+s1="string_mini"
+s2="string_mini"
+s3="string_plus"
+if [ $s1  = $s2 ]; then s1 and s2 are equal; fi      # 相等比较
+if [ $s1 != $s3 ]; then s1 is not equal with s3; fi  # 不等比较
+# 字符串比较 -------------------------------
+
+# case 语句 -------------------------------
+case $param in
+    param_a)
+        echo param_a
+    ;;
+    param_b)
+        echo param_b
+    ;;
+    *)
+        echo unknown param
+    ;;
+esac
+# case 语句 -------------------------------
+
+# for 累加
+for((i=1;i<=10;i++));do echo $i; done # PS: 原始sh不支持, 需要bash
