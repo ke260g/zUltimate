@@ -23,7 +23,8 @@ netstat -s
 
 
 # skb 参数列表 (部分) /proc/sys/net/core/
-1. `rmem_*` `wmem_*` 是整个协议栈共用的; `tcp_rmem` `tcp_wmem` 仅针对 tcp 的 
+1. `rmem_*` `wmem_*` 是每个socket的整个协议栈共用的;
+    + 而 `tcp_rmem` `tcp_wmem` 仅针对 tcp 的 
 ## rmem_default (默认接收缓存) (bytes)
 默认 229376 建议 256960
 ## rmem_max (最大接收缓存) (bytes)
