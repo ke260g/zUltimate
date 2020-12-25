@@ -26,3 +26,11 @@ public:
 };
 
 // Remove all elements from a linked list of integers that have value val.
+class Solution {
+public:
+    ListNode* removeElements(ListNode* head, int val) {
+        if (!head) return head;
+        head->next = removeElements(head->next, val);
+        return head->val == val ? head->next : head;
+    }
+};

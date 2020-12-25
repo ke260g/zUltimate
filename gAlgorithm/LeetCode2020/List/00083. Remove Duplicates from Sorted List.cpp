@@ -30,3 +30,18 @@ public:
         return deleteDuplicatesEx(head, &val);
     }
 };
+
+// 不用栈回溯
+class Solution {
+public:
+    // 递归
+    // 如果后继结点有值且等于自己; 干掉自己
+    // 否则返回自己
+    ListNode* deleteDuplicates(ListNode* head) {
+        if (!head) return head;
+        head->next = deleteDuplicates(head->next);
+        if (head->next && head->next->val == head->val)
+            return head->next;
+        return head;
+    }
+};

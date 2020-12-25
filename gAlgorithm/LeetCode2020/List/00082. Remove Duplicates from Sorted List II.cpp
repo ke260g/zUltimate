@@ -41,3 +41,20 @@ public:
         return deleteDuplicatesEx(head, &val);
     }
 };
+
+// 不用栈回溯
+class Solution {
+public:
+    ListNode* deleteDuplicates(ListNode* head) {
+        if (!head) return head;
+        if (head->next && head->next->val == head->val) {
+            int val = head->val;
+            while (head && head->val == val)
+                head = head->next;
+            head = deleteDuplicates(head);
+        } else {
+            head->next = deleteDuplicates(head->next);
+        }
+        return head;
+    }
+};

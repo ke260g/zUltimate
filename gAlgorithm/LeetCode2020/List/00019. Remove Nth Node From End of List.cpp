@@ -29,17 +29,20 @@ public:
         // 先找到前驱; 前驱是倒数n+1个数
         // 快慢指针法找到倒数n+1个节点
         ListNode *fast = head, *slow = head;
-        while (n >= 0 /*正常找倒数第n个 不需要等于0*/ && fast) {
+
+        n++; // 这里要倒数第n+1个; 所以先n++
+        while (n > 0 && fast) {
             fast = fast->next;
             n--;
         }
-        // n == 0 表示倒数第n个节点就是头节点; n+1个数还没找到fast就为nullptr
-        if (n == 0) return head->next;
+
+        // 说明倒数第n个就是头结点; 使得n无法减为0
+        if (n > 0) return head->next;
         while (fast) {
             fast = fast->next;
             slow = slow->next;
         }
+
         slow->next = slow->next->next;
         return head;
     }
-};
