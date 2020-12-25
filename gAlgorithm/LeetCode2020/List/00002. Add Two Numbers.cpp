@@ -48,3 +48,39 @@ public:
         return __addTwoNumbers(l1, l2, 0);
     }
 };
+
+
+class Solution {
+public:
+    ListNode* __addTwoNumbers(ListNode* l1, ListNode *l2, int give_next) {
+        // 3个变量(左右节点和是否进位); 8种场景
+        // 1. 两链表为空; 进位为0; 返回空
+        // 2. 两链表为空; 进位为1; 返回新节点 val = 1
+        // 3. 一链表为空; 进位为0; 返回非空链表
+        // 4. 一链表为空; 进位为1;
+        // 5. 两链表非空; 进位为?; 两个节点相加再加上进位; 递归
+
+        if (!l1 && !l2) // 情况1,2 语法压缩
+            return give_next ? new ListNode(1) : NULL;
+
+        if (!l1)        // 使得l1始终指向非空链表
+            swap(l1, l2);
+
+        if (!l2 && !give_next) // 情况3
+            return l1;
+
+        // 情况4, 5
+        l1->val += (l2 ? l2->val : 0) + give_next;
+        if (l1->val >= 10) {
+            l1->val -= 10;
+            give_next = 1;
+        } else {
+            give_next = 0;
+        }
+        lx->next = __addTwoNumbers(l1->next, (l2 ? l2->next : nullptr), give_next);
+        return lx;
+    }
+    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+        return __addTwoNumbers(l1, l2, 0);
+    }
+};
