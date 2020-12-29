@@ -33,7 +33,7 @@ public:
             if (node->right)
                 next_layer.push(node->right);
             
-            if (!curr_layer.size()) {
+            if (curr_layer.empty()) {
                 result.push_back(line);
                 line.clear();
                 swap(curr_layer, next_layer);

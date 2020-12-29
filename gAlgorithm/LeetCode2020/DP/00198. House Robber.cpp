@@ -33,12 +33,12 @@ public:
         // 如果存在第3种; 那么这种就是 i-4 ~ i
         //    但是 这种情况下; 一定可以去一趟i-2房子的
         //    所以 退化成 i-4 ~ i-2 ~ i 即情况2
-        vector<int> rob_val(nums.size(), 0);
-        rob_val[0] = nums[0];
-        rob_val[1] = nums[1];
-        rob_val[2] = nums[0] + nums[2];
-        for(int i = 3; i < nums.size(); ++i)
-            rob_val[i] = max(rob_val[i-3], rob_val[i-2]) + nums[i];
-        return max(rob_val[nums.size()-1], rob_val[nums.size()-2]);
+        int robs[3] = { nums[0], nums[1], nums[0] + nums[2] };
+        for(int i = 3; i < nums.size(); ++i) {
+            int curr = max(robs[0], robs[1]) + nums[i];
+            memmove(robs, robs+1, sizeof(int)*2);
+            robs[2] = curr;
+        }
+        return max(robs[1], robs[2]);
     }
 };

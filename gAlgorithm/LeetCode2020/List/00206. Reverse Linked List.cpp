@@ -14,7 +14,7 @@ public:
         // 3. 链表头的next指向尾巴
         // 4. 更新尾巴   (尾部指向链表头)
         // 5. 更新链表头 (之前缓存的下一个节点)
-        ListNode *tail = NULL;
+        ListNode *tail = nullptr;
         while (head) {
             ListNode *next = head->next;
 

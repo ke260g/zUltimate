@@ -22,7 +22,7 @@ hash
 3. Stack              (x)
 4. Tree               (x)
 5. TwoPtr             (x)
-6. Greedy
+6. Greedy             (x)
 7. Divide and Con
 8. Bit
 9. Binary Search      (x)

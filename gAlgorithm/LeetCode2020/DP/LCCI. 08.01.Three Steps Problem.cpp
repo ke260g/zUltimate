@@ -1,3 +1,4 @@
+// 最后一级必须踩上
 class Solution {
 public:
     int waysToStep(int n) {
@@ -24,8 +25,7 @@ public:
             res = (prev[0] + prev[1]) % module;
             res = (res + prev[2]) % module;
             // 右移动 斐波那数列窗口
-            prev[0] = prev[1];
-            prev[1] = prev[2];
+            memmove(prev, prev+1, 2*sizeof(int));
             prev[2] = res;
             curr_step++;
         }

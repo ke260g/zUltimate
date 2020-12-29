@@ -30,8 +30,7 @@ public:
         order[2] = nums[0] + nums[2];
         for (int i = 3; i < nums.size(); ++i) {
             int curr = max(order[0], order[1]) + nums[i];
-            order[0] = order[1];
-            order[1] = order[2];
+            memmove(order, order+1, 2*sizeof(int));
             order[2] = curr;
         }
         return max(order[2], order[1]);   

@@ -54,7 +54,7 @@ public:
             }
 
             line.push_back(node->val);
-            if (!curr_layer.size()) {
+            if (curr_layer.empty()) {
                 result.push_back(line);
                 line.clear();
                 swap(curr_layer, next_layer);

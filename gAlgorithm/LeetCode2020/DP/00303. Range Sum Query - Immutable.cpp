@@ -15,23 +15,23 @@
 // prev_nums[j] - prev_nums[i-1]
 // 列个表出来; 展示一下几个元素即可
 class NumArray {
-    vector<int> prev_sums;
+    vector<int> sums;
 public:
     NumArray(vector<int>& nums) {
         if (nums.size() == 0) return;
-        prev_sums.assign(nums.size(), 0);
+        sums.assign(nums.size(), 0);
         // sums[0] = nums[0]
         // sums[1] = sums[0] + sums[1]
         // sums[2] = sums[0] + sums[1] + sums[2]
         // sums[3] = sums[0] + sums[1] + sums[2] + sums[3]
-        prev_sums[0] = nums[0];
+        sums[0] = nums[0];
         for (int i = 1; i < nums.size(); ++i)
-            prev_sums[i] += prev_sums[i-1] + nums[i];
+            sums[i] += sums[i-1] + nums[i];
     }
+    
     int sumRange(int i, int j) {
-        if (prev_sums.empty()) return 0;
-        if (i == 0) return prev_sums[j];
-        return prev_sums[j] - prev_sums[i-1];
+        if (sums.empty()) return 0;
+        return i == 0 ? sums[j] : sums[j] - sums[i-1];
     }
 };
 

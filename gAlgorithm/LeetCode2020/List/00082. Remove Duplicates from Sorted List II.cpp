@@ -1,46 +1,13 @@
-/**
- * Definition for singly-linked list.
- * struct ListNode {
- *     int val;
- *     ListNode *next;
- *     ListNode(int x) : val(x), next(NULL) {}
- * };
- */
-class Solution {
-public:
-    ListNode* deleteDuplicatesEx(ListNode* head, int *val) {
-        // 1. 递归栈回溯; value表示"原始链表"的下一个节点的值
-        // 2. 当前节点值 == val
-        // 2.1 当前节点的下一个节点 ！= val
-        //     说明原始链表的下一个节点已被删除; 删除自己即可
-        // 2.2 当前节点的下一个节点 == val
-        //     删除自己和下一个节点
-        // 3. 更新value; 往上传递
-        if (!head->next) { // 递归终止条件
-            *val = head->val;
-            return head;  
-        }
+// Given a sorted linked list, delete all nodes that have duplicate numbers, 
+// leaving only distinct numbers from the original list.
 
-        head->next = deleteDuplicatesEx(head->next, val); // 递归开始
+// Return the linked list sorted as well.
 
-        if (*val == head->val) {
-            /* 原始链表的下一个节点已被删除; 删除自己 */
-            if (!head->next || head->next->val != *val) {
-                return head->next;
-            } else { /* 当前链表的下一个节点和当前节点相同; 删除两个 */
-                return head->next->next;
-            }
-        } else {
-            *val = head->val;
-            return head;
-        }
-    }
-    ListNode* deleteDuplicates(ListNode* head) {
-        if (!head) return head;
-        int val = 0;
-        return deleteDuplicatesEx(head, &val);
-    }
-};
+// Input: 1->2->3->3->4->4->5
+// Output: 1->2->5
+
+// Input: 1->1->1->2->3
+// Output: 2->3
 
 // 不用栈回溯
 class Solution {
@@ -49,7 +16,8 @@ public:
         if (!head) return head;
         if (head->next && head->next->val == head->val) {
             int val = head->val;
-            while (head && head->val == val)
+            head = head->next->next; // 先干掉当前的两个
+            while (head && head->val == val) // 再干掉后面的
                 head = head->next;
             head = deleteDuplicates(head);
         } else {

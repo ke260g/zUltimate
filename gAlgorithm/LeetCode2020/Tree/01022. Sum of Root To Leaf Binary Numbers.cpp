@@ -13,6 +13,17 @@
  *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
  * };
  */
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
 class Solution {
 public:
     int calcFromPath(vector<bool> &path) {
@@ -24,20 +35,17 @@ public:
     void sumRootToLeaf(TreeNode* root, vector<bool> &path, int &res) {
         if (!root) return;
         // 1. 空节点直接返回
-        // 2. 叶节点把当前节点的值塞进路径中; 得出路径值 后把自己从路径中弹出
-        // 3.1 非叶节点则先把当前节点值塞进路径中; 
-        // 3.2 遍历左子树
-        // 3.3 遍历右子树
-        // 3.4 最后把自己从路径中弹出
-        if (!root->left && !root->right) {
-            path.push_back(root->val);
-            res += calcFromPath(path);
-            path.pop_back();
-            return;
-        }
+        // 2. 叶节点把当前节点的值塞进路径中
+        // 3.1 如果是叶节点; 则递归终止 > 求出路径值
+        // 3.2 否则分别遍历左右子树
+        // 4. 最后把自己从路径中弹出
         path.push_back(root->val);
-        sumRootToLeaf(root->left, path, res);
-        sumRootToLeaf(root->right, path, res);
+        if (!root->left && !root->right) {
+            res += calcFromPath(path);
+        } else {
+            sumRootToLeaf(root->left, path, res);
+            sumRootToLeaf(root->right, path, res); 
+        }
         path.pop_back();
     }
     int sumRootToLeaf(TreeNode* root) {

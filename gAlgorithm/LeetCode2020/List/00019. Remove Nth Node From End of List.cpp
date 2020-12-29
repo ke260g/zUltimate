@@ -1,4 +1,9 @@
 // 删除数组倒数第k个元素
+// Given the head of a linked list, remove the nth node from the end of the list and return its head.
+
+// 来源：力扣（LeetCode）
+// 链接：https://leetcode-cn.com/problems/remove-nth-node-from-end-of-list
+// 著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。
 
 // 栈回溯求索引
 class Solution {
@@ -46,3 +51,4 @@ public:
         slow->next = slow->next->next;
         return head;
     }
+};

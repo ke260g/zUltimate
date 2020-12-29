@@ -90,7 +90,7 @@ bool check_complete_btree(struct node *root) {
         if (n->left)   next_layer_queue.push(n->left);
         if (n->right)  next_layer_queue.push(n->right);
 
-        if (!curr_layer_queue.size()) // 层级遍历; 当前层结束；进入下一层
+        if (curr_layer_queue.empty()) // 层级遍历; 当前层结束；进入下一层
             swap(curr_layer_queue, next_layer_queue);
     }
 
