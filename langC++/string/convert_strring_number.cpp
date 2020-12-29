@@ -23,3 +23,10 @@ string to_string(unsigned long val);
 string to_string(unsigned long long val);
 string to_string(double val);
 string to_string(long double val);
+
+// char 不能直接参与 string 的加法运算
+// char 转 string 的方法
+void append_char(string &s, char c) {
+    // s += c; // 语法错误
+    s += string(&c, &c+1);
+}

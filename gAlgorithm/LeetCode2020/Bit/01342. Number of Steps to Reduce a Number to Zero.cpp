@@ -44,3 +44,44 @@ public:
         return nstep;
     }
 };
+
+// 方法2: 数学归纳
+// 步数 == 1的bit位数*2 + 有效0的bit位数 - 1
+// 其实跟方法1一样; 复杂度都是 n 的有效bit数 
+class Solution {
+public:
+    int numberOfSteps (int num) {
+	int n_set = 0, n_clr = 0; 
+        while (num) {
+            if (num & 0x1)
+                n_set++; 
+            else
+                n_clr++;
+            num >>= 1;
+        }
+        return n_set << 2 + n_clr;
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
