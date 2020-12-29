@@ -70,6 +70,7 @@ g 表示long  (8 byte)
 + printf *(struct xxx *)0xfff 以可视化的形式打印结构体
 + printf *0xffff@10 
 + printf funcname::staic_variable 函数局部变量名
++ set printf pretty 使得结构体成员 自动换行打印
 
 # 2. 跨线程 / 跨进程
 + 需求: 暂停部分线程 & 其他线程继续运行

@@ -1,5 +1,3 @@
-
-
 ## 过滤
 逻辑运算符 `! == || && ()` 不要用 `!=`
 逻辑关键字 and not or
@@ -20,9 +18,12 @@ ip.addr == 192.168.1.1
 ip.src_host == 
 
 ### 链路层过滤
-过滤广播包 eth.addr == ff:ff:ff:ff:ff:ff 
-过滤IP包   eth.type == 0x0800
-过滤地址   eth.addr == 00:00:xx:
+广播包   eth.addr == ff:ff:ff:ff:ff:ff
+二层协议 eth.type == 0xabcd
+IP包     eth.type == 0x0800
+地址     eth.addr == 00:00:xx:
+源地址   eth.src == 00:00:xx:xx:xx:xx
+目的地址 eth.dst == 00:00:xx:xx:xx:xx
 
 ### 具体协议的具体字段过滤
 icmp.type == 8
@@ -42,6 +43,7 @@ icmp.type == 8
 + response 网络路径中延时大,
 + request/response 网络路径中 包丢失(理论上 延时足够大就是丢失)
 + request/response 网络路径中 拥塞, 通常以窗口大小反映, 反映整个网络不堪重负
+
 ### 查看来回延时
 + Y Field := frame.time_delta
 + Y Axis  := [ MIN AVG MAX ]
