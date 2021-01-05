@@ -34,7 +34,7 @@ hash
 5. TwoPtr             (x)
 6. Greedy             (x)
 7. Divide and Con
-8. Bit
+8. Bit                (x)
 9. Binary Search      (x)
 10. Sort              ()
 11. Array 

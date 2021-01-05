@@ -7,8 +7,7 @@
 class Solution {
 public:
     int getSum(int a, int b) {
-        if (!a || !b) return a | b;
-        while (b != 0) {
+        while (b) {
             unsigned c = (unsigned)(a & b) << 1; // 计算进位
             a = a ^ b;               // 计算无进位的结果 > 1^1=0, 0^0=0, 1^0=1
             b = c;                   // 加上进位

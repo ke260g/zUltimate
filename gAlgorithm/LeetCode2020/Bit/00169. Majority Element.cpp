@@ -22,15 +22,14 @@
 class Solution {
 public:
     int majorityElement(vector<int>& nums) {
-        int ans = -1;
-        int cnt = 0;
+        int ans = nums[0], cnt = 1;
         // 1. 计数器为0; 那就选择当前值 为候选人
         // 2. 当前值 == 候选人; 有人站队; 队伍更大; 计数器++
         // 3. 当前值 != 候选人; 有人敌对; 队伍缩小(拿队友去送); 计数器--
-        for (const auto n: nums) {
+        for (int i = 1; i < nums.size(); ++i) {
             if (cnt == 0)
-                ans = n;
-            cnt += ans == n ? 1 : -1;
+                ans = nums[i];
+            cnt += (ans == nums[i]) ? 1 : -1;
         }
         return ans;
     }
