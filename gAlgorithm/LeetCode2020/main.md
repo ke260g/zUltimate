@@ -10,7 +10,8 @@ hash
 分治
 字符串处理
 
-# leetcode-cli 登录问题
+# leetcode-cli 
+## 登录问题
 1. 文件 `~/.lc/leetcode/user.json`
 2. 内容
 ```json
@@ -21,6 +22,10 @@ hash
   "sessionId": "[copied from LEETCODE_SESSION]"
 }
 ```
+## 插件安装
+1. https://github.com/skygragon/leetcode-cli-plugins/tree/master/plugins 下载插件的js
+2. 把下载到的 js 文件放置到 ~/.lc/ 目录中
+3. 修改 ~/.lc/plugins.json 对应插件的的值, 改 false 为 true
 
 ## 记录
 | 000039 | Combination Sum | 做不出来
