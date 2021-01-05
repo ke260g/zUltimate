@@ -3,3 +3,4 @@ apt install w3m-img # 使得可以查看图片
 
 # 命令篇
 B 返回上一层
+s 显示 buffer 列表, 按 Ctrl-c 关掉, jk 上下选择

@@ -1,0 +1,19 @@
+1. 用户态 socket 对应内核对象 `struct socket;`
+2. 每个 socket 根据其 family 有下一层对象 `struct sock;`
+3. `/proc/net/netlink` 看到的丢包计数是成员变量 `sock->sk_drops` 的值
+4. 在 netlink socket 中, sk_drops 增加唯一函数是 netlink_overrun
+5. 该函数被两个函数调用 netlink_attachskb 和 do_one_broadcast (共有4个场景被调用)
+    1. netlink_attachskb 单播时才跑进来 (1个场景)
+    2. do_one_broadcast  广播时才跑进来 (3个场景)
+6. 出问题的进程, 都是广播 netlink
+    1. portd 设置了 RTMGRP_IPV4_IFADDR | RTMGRP_IPV6_IFADDR | RTMGRP_LINK 组
+    2. sw_stk_tsk 设置了 RTNLGRP_LINK 组
+7. 针对用户态 netlink, do_one_broadcast 在广播时执行 netlink_overrun 的场景
+    1. 广播数据有误 (我们的进程发包应该不会跑到这里)
+    2. skb 复制or引用, 即 skb_clone() or skb_get() 失败 (原因一般是: 没有内存)
+    3. socket 的接收缓存太小 (原因一般是: 用户态处理不过来, 导致分配空间被占满)
+8. portd 的 netlink 都是为了获取端口状态的;
+   出问题的环境中, 有435 个内核口, 怀疑在大量端口状态变化时, 容易导致丢包
+9. 但是, 查看 portd 的代码, 已经设置了 netlink 的接收缓存为 1024 * 1024
+   超出了 /proc/sys/net/core/rmem_max socket 接收缓存最大值
+   (主控是 2097152)

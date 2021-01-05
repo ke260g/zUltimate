@@ -149,7 +149,13 @@ thread apply $threadId1 $threadId2 continue # 批量 继续执行制定线程
 ```sh
 # 1. 先把 core 的 .debug.symbol 刚掉
 # 2. 拷贝少掉的 library
-find . -name *.debug.symbol | while read f; do mv $f $(echo $f | sed 's|.debug.symbol$||'); done
+find . -name *.debug.symbol | while read f; do
+  cd $(dirname $f)
+  f=$(basename $f)
+  ln -sf $f $(echo $f | sed 's|.debug.symbol$||')
+  cd - > /dev/null
+done
+
 cp /lib/libpthread* ./lib/
 cp /lib/libc* ./lib/
 cp /lib/libm* ./lib/

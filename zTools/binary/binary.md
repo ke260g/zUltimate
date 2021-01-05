@@ -2,7 +2,7 @@
 # 1. binary 工具列表
 | 名称      | 用途 |
 | --:       | :-- |
-| addr2line | 输入地址; 输出.debug 中对应的 `__FILE__` 和 `__LINE__` |
+| addr2line | 输入地址; 输出带符号elf中对应的 `__FILE__` 和 `__LINE__` |
 | ar        | create, modify, and extract `lib*.a` |
 | as        | assembler 汇编器 |
 | cpp       | c-preprocessor, 预处理器 |

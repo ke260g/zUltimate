@@ -10,7 +10,17 @@ hash
 分治
 字符串处理
 
-
+# leetcode-cli 登录问题
+1. 文件 `~/.lc/leetcode/user.json`
+2. 内容
+```json
+{
+  "login": "[username]",
+  "loginCSRF": "",
+  "sessionCSRF": "[copied from csrftoken]",
+  "sessionId": "[copied from LEETCODE_SESSION]"
+}
+```
 
 ## 记录
 | 000039 | Combination Sum | 做不出来

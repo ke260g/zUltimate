@@ -4,6 +4,8 @@ master in linuxC, ipc-programming, network-programming, system-programming
 wellin    kernel-module; network_device; interrupt; memory mapping & dma;
           netlink; bridge_forward; netfilter;
 
+apt show nodejs-mozilla // 这个是 debian 下开源的 nodejs, 不需要手动从官网下 .deb
+
 # 1. c++
 https://www.cnblogs.com/heartchord/p/4476615.html (manual list)
 对象模型 (候捷)
@@ -61,3 +63,4 @@ man 2 prctl
 proccess: top / ps / strace / ltrace / netstat / tcpdump / iptable / wireshark
 shell:    sed / awk / grep / sort / uniq; number-calculate; date-compare;
 devel:    gdb / gcc / valgrind
+
