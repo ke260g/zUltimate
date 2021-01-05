@@ -6,7 +6,6 @@
 // 这里有个坑: 有符号负数 右移; 其最左边的位用了1补充; 而不是0
 //             所以还得转换位无符号
 // 还有一个坑: 0 没有参与我们的 while 遍历; 要提前返回
-
 class Solution {
 public:
     char toHexChar(int n) {

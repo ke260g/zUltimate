@@ -31,7 +31,6 @@ public:
 class Solution {
 public:
     bool isPowerOfTwo(int n) {
-        if (n == 0) return false;
         // 定律2: x & (x-1) 可以干掉最右边的1
         // 1. 假如 x 最右边的1右边有 p 个 0
         // 2. 那么 x-1后; 因为减法借位; 最右边的1置零; 
@@ -40,10 +39,8 @@ public:
         //
         //
         // 如果 x 有且只有1个1; 那么 x & (x-1) == 0
-        long x = n;
-        return (x & (x-1)) == 0;
-
-	// 语法压缩
-	return x != 0 && ((x & (x-1)) == 0);
+        //
+        // 又因为 2的指数幂必须是正数; x > 0
+        return n > 0 && (n & (n-1)) == 0;
     }
 };

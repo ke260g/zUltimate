@@ -24,11 +24,10 @@ public:
         // 2. 求出其掩码
         // 3. 原始数值取反; 掩码取与
         int n = num, nbit = 0;
-        while(n){
-            ++nbit;
-            n >>=1;
+        while (n) {
+            nbit++;
+            n >>= 1;
         }
-        unsigned mask = (((unsigned) 1 << (nbit-1)) - 1);
-        return (unsigned)(~num) & mask;
+        return (~num) & ((unsigned)(1 << nbit) - 1);
     }
 };
