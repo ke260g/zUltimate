@@ -32,6 +32,7 @@
 // 2. 每个当前字符根据上一个字符确定要增加的数值
 // 3. 如果上一个字符和当前字符 组合成 4/9, 40/90, 400/900, 
 //    那就增加后再减去上一个字符表示的数值的两倍(之前已经加了一倍了)
+#if 0
 class Solution {
 public:
     int romanToInt(string s) {
@@ -66,7 +67,7 @@ public:
         return ans;
     }
 };
-
+#endif
 
 // 方法2:
 // 1. 从右往左
@@ -76,7 +77,7 @@ public:
 // 3. 记录当前数值
 class Solution {
 public:
-    int romanToInt(char c) {
+    int __romanToInt(char c) {
         switch (c) {
             case 'I':
                 return 1;
@@ -101,7 +102,7 @@ public:
         int prev = 0;
         int ans = 0;
         for (int i = s.size()-1; i >= 0; i--) {
-            int curr = romanToInt(s[i]);
+            int curr = __romanToInt(s[i]);
             ans = curr < prev ? ans - curr : ans + curr;
             prev = curr;
         }

@@ -25,19 +25,17 @@ class Solution {
 public:
     string longestCommonPrefix(vector<string>& strs) {
         if (strs.empty()) return "";
-        vector<char> answer;
-        for (int i = 0; i < strs[0].size(); ++i) {
+        int i = 0;
+        for (; i < strs[0].size(); ++i) {
             char common = strs[0][i];
             int j = 1;
             for (; j < strs.size(); ++j) {
                 if (i >= strs[j].size() ||  strs[j][i] != common)
                     break;
             }
-            if (j == strs.size())
-                answer.push_back(common);
-            else
+            if (j != strs.size())
                 break;
         }
-        return answer.empty() ? "" : string(answer.begin(), answer.end());
+        return string(strs[0].begin(), strs[0].begin()+i);
     }
 };
