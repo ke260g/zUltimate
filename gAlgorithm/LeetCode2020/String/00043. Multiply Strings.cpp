@@ -105,8 +105,11 @@ class Solution {
 
         vector<int> s(1, 0);
 
-        for (int i = 0; i < y.size(); i++)
-            s = __addString(s, __mulString(x, y[i], i));
+
+        for (int i = 0; i < y.size(); i++) {
+            vector<int> t = __mulString(x, y[i], i);
+            s = __addString(s, t);
+        }
 
         // 3. 转换为 char
         for (auto & n: s) n += '0';

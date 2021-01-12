@@ -23,26 +23,15 @@
 class Solution {
 public:
     string tree2str(TreeNode* t) {
-        // 1. 空节点不输出
-        // 2. 叶节点只输出自己
-        // 3. 左节点无论存在; 都需要输出()
-        // 4. 输出非空右节点; 左右都要有()
-        string res;
-        // 本质是前序遍历
-        if (!t) return res;
-        res += to_string(t->val);
+        // 1. 节点为空返回 ""
+        // 2. 叶节点只返回值
+        // 3. 只有左子树: 那么只递归左子树
+        // 4. 右子树非空: 不管左子树是否为空; 都要递归
+        if (!t) return "";
         if (!t->left && !t->right)
-            return res;
-        res += "(";
-        if (t->left)
-            res += tree2str(t->left);
-        res += ")";
-
-        if (t->right) {
-            res += "(";
-            res += tree2str(t->right);
-            res += ")";
-        }
-        return res;
+            return to_string(t->val);
+        if (!t->right)
+            return to_string(t->val) + "(" + tree2str(t->left) + ")";
+        return to_string(t->val) + "(" + tree2str(t->left) + ")" + "(" + tree2str(t->right) + ")";
     }
 };

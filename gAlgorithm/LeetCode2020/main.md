@@ -10,6 +10,8 @@ hash
 分治
 字符串处理
 
+中等题真的要做大半天的; 而且可能是错的
+
 # leetcode-cli 
 ## 登录问题
 1. 文件 `~/.lc/leetcode/user.json`
@@ -28,8 +30,8 @@ hash
 3. 修改 ~/.lc/plugins.json 对应插件的的值, 改 false 为 true
 
 ## 记录
-| 000039 | Combination Sum | 做不出来
-
+| 000039 | Combination Sum | 做不出来 |
+| 000043 | Multiply Strings | 时间太慢了; 待优化 |
 
 ## level1 simple
 1. DP                 (x)

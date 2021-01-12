@@ -45,6 +45,8 @@
  * 
  * 
  */
+
+// 自己想的 双70%
 class Solution {
 public:
     bool checkPossibility(vector<int>& nums) {
@@ -60,19 +62,18 @@ public:
         //
         // 2. 如果后续不再有递减点; 满足条件
         // 3. 如果后续找到第二个递减点; 不满足
-        bool decrease = false;
+        bool found = false;
         for (int i = 1; i < nums.size(); ++i) {
-            if (nums[i] < nums[i-1]) {
-                if (decrease)
-                    return false;
-                else {
-                    if (i == 1 || nums[i-2] <= nums[i])
-                        nums[i-1] = nums[i];
-                    else
-                        nums[i] = nums[i-1];
-                    decrease = true;
-                }
-            }
+            if (nums[i-1] <= nums[i]) continue;
+
+            if (found) return false;
+
+            if (i == 1 || nums[i-2] <= nums[i])
+                nums[i-1] = nums[i];
+            else
+                nums[i] = nums[i-1];
+
+            found = true;
         }
         return true;
     }
