@@ -30,6 +30,7 @@ public:
             auto found = cache.find(s[i]);
             // 1. if 遇到一个重复的字符 而且 上一次出现的位置在当前匹配长度后方
             // 2. then 重新开始; 匹配的起始位置=上一次位置+1; 长度 = 当前位置-上一次位置
+            //    这种场景下不需要更新结果
             // 3. else 继续往前匹配; 长度++, 更新结果
             if (found != cache.end() && found->second >= start) {
                 start = found->second+1;

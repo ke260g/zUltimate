@@ -5,6 +5,8 @@
 // Output: ["h","a","n","n","a","H"]
 
 // 翻转字符串
+
+#if 0
 class Solution { // 索引标记法
 public:
     void reverseString(vector<char>& s) {
@@ -15,6 +17,7 @@ public:
         }
     }
 };
+#endif
 
 class Solution { // 双指针前后逼近法
 public:
