@@ -18,27 +18,33 @@
 // 形同 00067 Add Binary
 class Solution {
 public:
-    int addDigit(int x, int y, int & give) {
-        int curr = x + y + give;
-        if (curr >= 10) {
-            give = 1;
-            return curr - 10;
-        }
-        give = 0;
-        return curr;
+    vector<int> __addVectors(vector<int> &x, vector<int> &y) {
+        int i = 0, give = 0;
+        auto addone = [&](int &l, int r, int &give) {
+            l += r + give; 
+            give = l / 10;    
+            l %= 10;
+        };
+        if (x.size() < y.size())
+            swap(x, y);
+        for (; i < y.size(); ++i)
+            addone(x[i], y[i], give);
+        for (; i < x.size() && give; ++i)
+            addone(x[i], 0, give);
+        if (give) 
+            x.push_back(give);
+        return x;
     }
     string addStrings(string num1, string num2) {
-        vector<char> s;
-        int i = num1.size()-1, j = num2.size()-1;
-        int give = 0;
-        while (i >= 0 && j >= 0)
-            s.push_back('0' + addDigit(num1[i--]-'0', num2[j--]-'0', give));
-        while (i >= 0)
-            s.push_back('0' + addDigit(num1[i--]-'0', 0, give));
-        while (j >= 0)
-            s.push_back('0' + addDigit(0, num2[j--]-'0', give));
-        if (give)
-            s.push_back('0' + give);
-        return string(s.rbegin(), s.rend());
+        vector<int> x(num1.begin(), num1.end());
+        vector<int> y(num2.begin(), num2.end());
+        for (auto & n: x) n -= '0';
+        for (auto & n: y) n -= '0';
+        reverse(x.begin(), x.end());
+        reverse(y.begin(), y.end());
+
+        vector<int> z = __addVectors(x, y);
+        for (auto & n: z) n += '0';
+        return string(z.rbegin(), z.rend());
     }
 };
