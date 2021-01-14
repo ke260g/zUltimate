@@ -54,7 +54,7 @@ public:
         while (l <= r) {
             int m = l + (r-l)/2;
             if (letters[m] > target) { // 必须大于而不是大于等于
-                ans = min(ans, m);
+                ans = m;
                 r = m-1;
             } else {
                 l = m+1;

@@ -64,7 +64,6 @@ public:
             if (!(n & 0x1))
                 sum += n;
         }
-        cout << "sum: " << sum << endl;
         for (int i = 0; i < queries.size(); ++i) {
             int &val = A[queries[i][1]]; // 操作数在 数组中将会累加; 引用
             sum -= (!(val & 0x1)) * val; // 之前是偶数; 干掉

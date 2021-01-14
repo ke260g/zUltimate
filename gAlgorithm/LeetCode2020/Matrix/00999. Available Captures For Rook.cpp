@@ -82,8 +82,6 @@ public:
         // 3. 当遇到第一个非空点 ( != '.')
         //    如果是 'p' 那么 capture;
         //    无论是否是p; 终止该方向的遍历
-        //
-        // Note: 方向步进矩阵参考 00874. Walking Robot Simulation
         int x, y, ncap = 0;
         for (int i = 0; i < board.size(); ++i) {
             for (int j = 0; j < board[0].size(); ++j) {

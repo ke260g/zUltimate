@@ -89,7 +89,7 @@ public:
         for (int i = 0; i+1 < A.size(); i++) {
             int ns = A[i] - A[i+1];
             if (ns) {
-                ns = ns > 0 ? 1 : -1;
+                ns = ns == 0 ? 0 : (ns > 0 ? 1 : -1);
                 if (status && ns != status)
                     return false;
                 status = ns;
