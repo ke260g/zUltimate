@@ -83,12 +83,18 @@ public:
         // [0, digit) letter-log
         // [digit, i) digit-log
         // [i, end)   unknown
+        //
+        // Note: 因为要求保留 digit 的顺序
+        //       所以双指针窗口法这里不能直接 swap(logs[i], logs[digit++])
+        //       这里要用插入法
         int digit = 0;
         for (int i = 0; i < logs.size(); i++) {
             if (isletter(logs[i])) {
+                // 插入法
+                auto t = logs[i];
                 for (int j = i; j > digit; j--)
-                    swap(logs[j-1], logs[j]); 
-                digit++;
+                    logs[j] = logs[j-1];
+                logs[digit++] = t;
             }
         }
         sort(logs.begin(), logs.begin()+digit, cmpLetter);
