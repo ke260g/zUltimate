@@ -95,12 +95,9 @@ public:
     vector<int> fairCandySwap(vector<int>& A, vector<int>& B) {
         vector<int> ans;
         int suma = 0, sumb = 0;
-        set<int> setb;
         for (auto n: A) suma += n;
-        for (auto n: B) {
-            setb.insert(n);
-            sumb += n;
-        }
+        for (auto n: B) sumb += n;
+        set<int> setb(B.begin(), B.end());
         int diff = (suma - sumb) / 2;
         for (int i = 0; i < A.size(); ++i) {
             if (setb.count(A[i] - diff)) {

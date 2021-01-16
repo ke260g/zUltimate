@@ -44,7 +44,8 @@ hash
 8. Bit                (x)
 9. Binary Search      (x)
 10. Sort              ()
-11. Array 
-11. String
+11. Array             ()
+12. String            ()
+13. Math              ()
 
 ## level2 middle
