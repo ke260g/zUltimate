@@ -63,6 +63,8 @@
 class Solution {
 public:
     int numberOfMatches(int n) {
+        return n - 1; // dark magic
+
         int m = 0;
         while (n != 1) {
             m += n/2;
